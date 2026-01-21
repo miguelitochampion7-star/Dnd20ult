@@ -273,13 +273,73 @@ window.magic_selectClass = function (idx) {
     renderMagicUI();
 }
 
-// Re-export old globals for main.js binding?
-// Just ensure these are imported by main.js
-export { showSpellInfoCard, closeSpellInfoCard } from './../../modals.js?fallback';
-// Wait, internal features shouldn't be here. main.js imports 'showSpellInfoCard' from modals or compendium?
-// Prior 'spell_compendium.js' had them.
-// We must replicate the exports expected by main.js.
+// --- POPUPS & SPELL ACTIONS ---
 
-export { showSpellInfoCard, closeSpellInfoCard } from '../features/spell_compendium.js'; // Oh wait, we are REPLACING spell_compendium.js. 
-// So we must IMPLEMENT showSpellInfoCard here or move it to modals.
-// Actually, showSpellInfoCard was in spell_compendium.js. We need to implement it here.
+export function showSpellInfoCard(spellName) {
+    const spell = SPELL_DB.find(s => s.n === spellName);
+    if (!spell) {
+        showToast(`Hechizo no encontrado: ${spellName}`);
+        return;
+    }
+    const existing = document.getElementById('spellInfoModal');
+    if (existing) existing.remove();
+
+    const html = `
+        <div id="spellInfoModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onclick="window.closeSpellInfoCard()">
+            <div class="bg-[#1a120b] border-2 border-[#c5a059] rounded-lg max-w-md w-full p-4 max-h-[80vh] overflow-y-auto custom-scroll shadow-2xl" onclick="event.stopPropagation()">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-lg font-bold text-[#c5a059] flex items-center gap-2"><span class="text-blue-400">ⓘ</span> ${spell.n}</h3>
+                    <button onclick="window.closeSpellInfoCard()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+                </div>
+                <div class="space-y-1 text-sm text-gray-300">
+                    ${spell.s ? `<p><span class="text-purple-400">📚 Escuela:</span> ${spell.s}</p>` : ''}
+                    ${spell.l ? `<p><span class="text-yellow-400">⭐ Nivel:</span> ${spell.l}</p>` : ''}
+                    ${spell.r ? `<p><span class="text-blue-400">🎯 Alcance:</span> ${spell.r}</p>` : ''}
+                    ${spell.t ? `<p><span class="text-green-400">⏱ Lanzamiento:</span> ${spell.t}</p>` : ''}
+                    ${spell.dur ? `<p><span class="text-cyan-400">⌛ Duración:</span> ${spell.dur}</p>` : ''}
+                    ${spell.c ? `<p><span class="text-orange-400">📜 Componentes:</span> ${spell.c}</p>` : ''}
+                    ${spell.sv ? `<p><span class="text-red-400">💪 Salvación:</span> ${spell.sv}</p>` : ''}
+                    ${spell.sr ? `<p><span class="text-gray-400">🛡 R. Conjuros:</span> ${spell.sr}</p>` : ''}
+                </div>
+                ${spell.d ? `<hr class="my-3 border-[#333]"><p class="text-xs text-gray-400 whitespace-pre-wrap leading-relaxed">${spell.d}</p>` : ''}
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+export function closeSpellInfoCard() {
+    const modal = document.getElementById('spellInfoModal');
+    if (modal) modal.remove();
+}
+
+export function addSpellFromDB(name, lvl) {
+    if (state.spells.some(s => s.n === name)) {
+        showToast(`Ya conoces: ${name}`);
+        return;
+    }
+    state.spells.push({ l: 'N' + lvl, n: name });
+    showToast(`📖 ${name} aprendido`);
+    renderMagicUI();
+    document.dispatchEvent(new CustomEvent('state:updated'));
+}
+
+export function remSpell(i) {
+    const spell = state.spells[i];
+    if (spell) {
+        state.spells.splice(i, 1);
+        showToast(`Hechizo olvidado`);
+        renderMagicUI();
+        document.dispatchEvent(new CustomEvent('state:updated'));
+    }
+}
+
+// Stubs for backward compatibility
+export function toggleSpellCard(idx) { }
+export function toggleSpellSlot(lvl, idx) { }
+
+export function resetSpellSlots() {
+    state.spellSlotsUsed = {};
+    renderMagicUI();
+    showToast('✨ Conjuros restaurados');
+}
+
