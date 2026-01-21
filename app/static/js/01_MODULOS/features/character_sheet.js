@@ -3,7 +3,7 @@ import { state } from '../../00_CORE/core/state.js';
 import { STATS, KEYS, RACES, CLASSES, BUFFS, SKILLS_LIST, SYNERGY_MAP, WEAPONS_DB } from '../../00_CORE/config.js';
 import { getCarryingCapacity, getSave, formatNum } from '../mechanics/stats.js';
 import { rollD20, rollDice, logRoll, rollDamage } from '../mechanics/dice.js';
-import { renderSpells } from './spell_compendium.js';
+import { renderMagicUI } from './magic/ui.js';
 
 // Re-export what is needed by main logic if not imported directly
 // For updateAll, we need almost everything.
@@ -144,7 +144,7 @@ export function updateAll() {
     renderAttacks(bab, mods, eff, sizeMod);
 
     // 8. Spells
-    renderSpells();
+    renderMagicUI();
 }
 
 function readInputs() {

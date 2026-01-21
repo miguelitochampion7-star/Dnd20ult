@@ -5,7 +5,7 @@ import { updateAll } from '../01_MODULOS/features/character_sheet.js';
 import {
     toggleCompendium, addSpellFromDB, remSpell, toggleSpellCard,
     showSpellInfoCard, closeSpellInfoCard, toggleSpellSlot, resetSpellSlots
-} from '../01_MODULOS/features/spell_compendium.js';
+} from '../01_MODULOS/features/magic/ui.js';
 import { openGenerator, runGenerator } from '../01_MODULOS/features/archetypes/generator.js';
 import { switchTab, toggleSidebar, toggleFullScreen } from '../01_MODULOS/ui/tabs.js';
 import { showCustomAlert, showCustomConfirm, showToast } from '../01_MODULOS/modals.js';
