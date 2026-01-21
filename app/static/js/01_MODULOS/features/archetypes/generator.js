@@ -88,7 +88,7 @@ function generateCharacter(cls, lvl) {
         inventory: [],
         spells: [],
         buffs: [],
-        spellSlotsUsed: {},
+        used_slots: {},
         gold: 0,
         notes: ""
     };

@@ -128,6 +128,7 @@ function renderClassGrimoire(container, classObj) {
     // Refactor Plan: Separate usage? For now, shared usage is "ok" but risky.
     // Let's migrate to `state.used_slots[classObj.id][lvl]` logic if possible.
     // Backward compat check:
+    if (!state.used_slots) state.used_slots = {};
     if (!state.used_slots[classObj.id]) state.used_slots[classObj.id] = {};
 
     // Group Known Spells by Level
