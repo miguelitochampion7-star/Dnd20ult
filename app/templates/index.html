@@ -16,8 +16,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- API Client -->
-    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
 </head>
 
 <body>
@@ -427,163 +425,13 @@
 
     <!-- Scripts -->
 
-    <script type="module" src="{{ url_for('static', filename='js/00_CORE/main.js') }}?v=6"></script>
-
-    <!-- Integration Script -->
+    <!-- Set Ficha ID for module -->
     <script>
-        // Configuración de la ficha actual
-        const FICHA_ID = "{{ ficha_id }}";
-        let autoSaver = null;
-
-        // Función para obtener todos los datos de la ficha
-        function getAllData() {
-            // La variable `state` es global, definida en engine.js
-            if (typeof state !== 'undefined') {
-                return state;
-            } else {
-                // Fallback: construir objeto básico desde DOM
-                return {
-                    name: document.getElementById('charName')?.value || '',
-                    race: document.getElementById('raceSelect')?.value || 'Humano',
-                    classes: [],
-                    stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }
-                };
-            }
-        }
-
-        // Cargar ficha al iniciar
-        async function loadFichaFromDB() {
-            if (FICHA_ID === 'new') {
-                // Nueva ficha - crear en BD
-                const result = await api.createFicha({
-                    nombre_personaje: 'Nuevo Personaje',
-                    data_json: getAllData()
-                });
-
-                if (result.success && result.ficha) {
-                    // Redirigir a la ficha recién creada
-                    window.location.href = `/ficha/${result.ficha.id}`;
-                } else {
-                    console.error('Error creando ficha:', result.error);
-                }
-            } else if (FICHA_ID !== 'None') {
-                // Cargar ficha existente
-                const result = await api.getFicha(FICHA_ID);
-
-                if (result.success && result.ficha) {
-                    // Cargar datos en la interfaz
-                    loadDataFromJSON(result.ficha.data_json);
-
-                    // Iniciar auto-guardado
-                    autoSaver = new AutoSaver(async () => {
-                        const data = getAllData();
-                        const nombre = document.getElementById('charName').value || 'Sin Nombre';
-
-                        await api.updateFicha(FICHA_ID, {
-                            nombre_personaje: nombre,
-                            data_json: data
-                        });
-                    }, 10000); // Guardar cada 10 segundos
-                } else {
-                    alert('Error cargando ficha: ' + result.error);
-                    window.location.href = '/dashboard';
-                }
-            }
-        }
-
-        // Función para guardar manualmente
-        async function manualSave() {
-            if (autoSaver) {
-                await autoSaver.forceSave();
-                window.showToast('✅ Ficha guardada correctamente');
-            }
-        }
-
-        // Función para eliminar ficha
-        async function deleteFicha() {
-            if (!FICHA_ID || FICHA_ID === 'new' || FICHA_ID === 'None') {
-                alert('No se puede eliminar una ficha no guardada');
-                return;
-            }
-
-            if (!await window.showCustomConfirm('⚠️ ¿Estás seguro de eliminar esta ficha de la base de datos?\\n\\nEsta acción no se puede deshacer.')) {
-                return;
-            }
-
-            const result = await api.deleteFicha(FICHA_ID);
-            if (result.success) {
-                window.showToast('✅ Ficha eliminada correctamente');
-                // Small delay to see toast
-                setTimeout(() => window.location.href = '/dashboard', 1000);
-            } else {
-                window.showToast('❌ Error al eliminar: ' + result.error, 'error');
-            }
-        }
-
-        // Sobrescribir updateAll para activar auto-guardado
-        if (typeof updateAll === 'function') {
-            const originalUpdateAll = updateAll;
-            window.updateAll = function () {
-                originalUpdateAll();
-                if (autoSaver) {
-                    autoSaver.markDirty();
-                }
-            };
-        }
-
-        // Función auxiliar para cargar datos desde JSON
-        // Función auxiliar para cargar datos desde JSON
-        function loadDataFromJSON(data) {
-            if (!data) return;
-
-            // 1. Restaurar Estado Global
-            // Aseguramos que la estructura sea completa mezclando con el default por si faltan campos nuevos
-            // Deep merge es difícil en vanilla puro sin deps, pero Object.assign nivel 1 sirve.
-            // Mejor: Asignar y luego validar.
-            Object.assign(state, data);
-
-            // 2. Restaurar Inputs del DOM (Para que readInputs no sobrescriba con nulos)
-
-            // Basics
-            setVal('charName', state.name);
-            setVal('raceSelect', state.race);
-            // setVal('alignSelect', state.align); // Si existe en el DOM
-
-            // Stats
-            if (state.stats) {
-                ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(k => {
-                    setVal('base_' + k, state.stats[k]);
-                });
-            }
-
-            // Resources
-            setVal('hpCurr', state.hp_curr);
-            setVal('inventory', state.inventory);
-            setVal('gold', state.gold);
-
-            // Manual AC
-            if (state.ac_manual) {
-                setVal('acArmor', state.ac_manual.armor);
-                setVal('acShield', state.ac_manual.shield);
-                setVal('acNatural', state.ac_manual.natural);
-                setVal('acDeflect', state.ac_manual.deflect);
-                // setVal('acpArmor', state.acp_manual); // Si existe input
-            }
-
-            // 3. Renderizar todo (Clases, Skills, Spells se renderizan desde 'state' en updateAll)
-            updateAll();
-        }
-
-        function setVal(id, val) {
-            const el = document.getElementById(id);
-            if (el) el.value = val !== undefined ? val : '';
-        }
-
-        // Cargar ficha cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFichaFromDB();
-        });
+        window.FICHA_ID = "{{ ficha_id }}";
     </script>
+
+    <!-- Main Module -->
+    <script type="module" src="{{ url_for('static', filename='js/00_CORE/main.js') }}?v=7"></script>
 </body>
 
 </html>

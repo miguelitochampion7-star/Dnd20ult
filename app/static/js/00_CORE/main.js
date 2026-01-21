@@ -12,56 +12,173 @@ import { showCustomAlert, showCustomConfirm, showToast } from '../01_MODULOS/mod
 import { rollCustomDice, logRoll, rollDamage } from '../01_MODULOS/mechanics/dice.js';
 import { APIClient, AutoSaver } from './api.js';
 
-// --- Initialization ---
-
-// Global Instances
+// --- Global Instances ---
 const api = new APIClient();
+let autoSaver = null;
 
-// Expose Globals for Inline Scripts (index.html, etc.)
+// Expose Globals for Inline Scripts
 window.state = state;
 window.api = api;
-window.AutoSaver = AutoSaver;
+
+// --- Ficha Loading & Saving ---
+
+function getFichaId() {
+    // Get ficha ID from global variable set by template
+    return window.FICHA_ID || null;
+}
+
+async function loadFichaFromDB() {
+    const fichaId = getFichaId();
+
+    if (!fichaId || fichaId === 'None') {
+        console.log("No ficha ID found, skipping load");
+        return;
+    }
+
+    if (fichaId === 'new') {
+        // Create new ficha
+        const result = await api.createFicha({
+            nombre_personaje: 'Nuevo Personaje',
+            data_json: state
+        });
+
+        if (result.success && result.ficha) {
+            window.location.href = `/ficha/${result.ficha.id}`;
+        } else {
+            console.error('Error creating ficha:', result.error);
+            showToast('Error creando ficha: ' + result.error, 'error');
+        }
+        return;
+    }
+
+    // Load existing ficha
+    console.log("Loading ficha:", fichaId);
+    const result = await api.getFicha(fichaId);
+
+    if (result.success && result.ficha) {
+        loadDataFromJSON(result.ficha.data_json);
+        initAutoSaver(fichaId);
+        showToast("Ficha cargada correctamente");
+    } else {
+        console.error('Error loading ficha:', result.error);
+        showToast('Error cargando ficha: ' + result.error, 'error');
+    }
+}
+
+function initAutoSaver(fichaId) {
+    autoSaver = new AutoSaver(async () => {
+        const nombre = state.name || document.getElementById('charName')?.value || 'Sin Nombre';
+
+        await api.updateFicha(fichaId, {
+            nombre_personaje: nombre,
+            data_json: state
+        });
+    }, 10000); // Save every 10 seconds
+
+    console.log("AutoSaver initialized for ficha:", fichaId);
+}
 
 window.loadDataFromJSON = function (data) {
     if (!data) return;
 
-    // 1. Merge Data
+    // 1. Merge Data into state
     Object.assign(state, data);
 
     // 2. Update DOM Inputs
-    if (document.getElementById('charName')) document.getElementById('charName').value = state.name || '';
-    if (document.getElementById('raceSelect')) document.getElementById('raceSelect').value = state.race || 'Humano';
-    if (document.getElementById('hpCurr')) document.getElementById('hpCurr').value = state.hp_curr || 0;
-    if (document.getElementById('inventory')) document.getElementById('inventory').value = state.inventory || '';
-    if (document.getElementById('gold')) document.getElementById('gold').value = state.gold || 0;
+    setInputValue('charName', state.name);
+    setInputValue('raceSelect', state.race);
+    setInputValue('hpCurr', state.hp_curr);
+    setInputValue('inventory', state.inventory);
+    setInputValue('gold', state.gold);
 
     // AC
     if (state.ac_manual) {
-        if (document.getElementById('acArmor')) document.getElementById('acArmor').value = state.ac_manual.armor || 0;
-        if (document.getElementById('acShield')) document.getElementById('acShield').value = state.ac_manual.shield || 0;
-        if (document.getElementById('acNatural')) document.getElementById('acNatural').value = state.ac_manual.natural || 0;
-        if (document.getElementById('acDeflect')) document.getElementById('acDeflect').value = state.ac_manual.deflect || 0;
+        setInputValue('acArmor', state.ac_manual.armor);
+        setInputValue('acShield', state.ac_manual.shield);
+        setInputValue('acNatural', state.ac_manual.natural);
+        setInputValue('acDeflect', state.ac_manual.deflect);
     }
 
     // Stats
     KEYS.forEach(k => {
-        if (document.getElementById('base_' + k)) document.getElementById('base_' + k).value = state.stats[k] || 10;
+        setInputValue('base_' + k, state.stats?.[k] || 10);
     });
 
-    // 3. Trigger Logic
+    // 3. Trigger full UI update
     updateAll();
-    showToast("Ficha cargada correctamente");
 };
+
+function setInputValue(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val !== undefined && val !== null ? val : '';
+}
+
+// --- Manual Save ---
+window.manualSave = async function () {
+    if (autoSaver) {
+        autoSaver.hasChanges = true; // Force save even if no changes detected
+        await autoSaver.forceSave();
+        showToast('✅ Ficha guardada correctamente');
+    } else {
+        showToast('⚠️ Auto-guardado no inicializado', 'warning');
+    }
+};
+
+// --- Delete Ficha ---
+window.deleteFicha = async function () {
+    const fichaId = getFichaId();
+
+    if (!fichaId || fichaId === 'new' || fichaId === 'None') {
+        showCustomAlert('No se puede eliminar una ficha no guardada');
+        return;
+    }
+
+    if (!await showCustomConfirm('⚠️ ¿Estás seguro de eliminar esta ficha?\n\nEsta acción no se puede deshacer.')) {
+        return;
+    }
+
+    const result = await api.deleteFicha(fichaId);
+    if (result.success) {
+        showToast('✅ Ficha eliminada correctamente');
+        setTimeout(() => window.location.href = '/dashboard', 1000);
+    } else {
+        showToast('❌ Error al eliminar: ' + result.error, 'error');
+    }
+};
+
+// --- Rest Character ---  
+window.restCharacter = async function () {
+    if (!await showCustomConfirm("¿Realizar Descanso Largo?\n(Recuperar PG, Hechizos y eliminar fatiga)")) return;
+
+    // Heal HP
+    const maxHP = parseInt(document.getElementById('hpMax')?.innerText) || 10;
+    state.hp_curr = maxHP;
+    const hpInput = document.getElementById('hpCurr');
+    if (hpInput) hpInput.value = maxHP;
+
+    // Clear Used Slots
+    state.used_slots = {};
+
+    // Clear Buffs
+    state.buffs = [];
+
+    updateAll();
+    logRoll("Descanso Largo", 0, 0, "Recuperación completa");
+};
+
+// --- Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) lucide.createIcons();
+
     try {
         initUI();
         initGestures();
 
-        // Listen for internal state updates
-        document.addEventListener('state:updated', () => updateAll());
+        // Load ficha from database
+        loadFichaFromDB();
 
+        // Initial UI render
         updateAll();
 
         console.log("Abyssal Engine (Modular) Loaded 🚀");
@@ -100,7 +217,7 @@ function initUI() {
         });
     }
 
-    // Buffs List (Static from Config)
+    // Buffs List
     const bContainer = document.getElementById('buffsContainer');
     if (bContainer) {
         bContainer.innerHTML = '';
@@ -117,7 +234,6 @@ function initUI() {
 }
 
 function initGestures() {
-    // Simplified for robustness
     const sb = document.getElementById('sidebar');
     if (!sb) return;
 
@@ -136,7 +252,15 @@ function initGestures() {
 
 // --- Expose Globals (Legacy Compatibility) ---
 
-window.updateAll = updateAll;
+// Wrap updateAll to trigger autosave
+const originalUpdateAll = updateAll;
+window.updateAll = function () {
+    originalUpdateAll();
+    if (autoSaver) {
+        autoSaver.markDirty();
+    }
+};
+
 window.toggleCompendium = toggleCompendium;
 window.addSpellFromDB = addSpellFromDB;
 window.remSpell = remSpell;
@@ -156,27 +280,28 @@ window.showCustomAlert = showCustomAlert;
 window.showCustomConfirm = showCustomConfirm;
 window.logRoll = logRoll;
 window.rollDamage = rollDamage;
+window.rollCustomDice = rollCustomDice;
 
 // Actions that need to be globally accessible for HTML onclicks
 window.modLvl = function (i, val) {
     state.classes[i].lvl += val;
     if (state.classes[i].lvl <= 0) state.classes.splice(i, 1);
-    updateAll();
+    window.updateAll();
 };
 
 window.setSkill = function (n, v) {
     state.skills[n] = parseInt(v) || 0;
-    updateAll();
+    window.updateAll();
 };
 
 window.addWeapon = function () {
     state.weapons.push(document.getElementById('weaponSelect').value);
-    updateAll();
+    window.updateAll();
 };
 
 window.remWeapon = function (i) {
     state.weapons.splice(i, 1);
-    updateAll();
+    window.updateAll();
 };
 
 window.toggleBuff = function (id) {
@@ -189,27 +314,21 @@ window.toggleBuff = function (id) {
         state.buffs.splice(idx, 1);
         if (el) el.classList.remove('active');
     }
-    updateAll();
+    window.updateAll();
 };
 
 window.addClass = function () {
     state.classes.push({ id: document.getElementById('addClassSelect').value, lvl: 1 });
-    updateAll();
+    window.updateAll();
 };
 
 window.rollCheck = function (s) {
-    // Simplified wrapper for legacy calls
-    // Logic needs to find modifier from DOM or State
     let mod = 0;
     if (STATS.includes(s)) {
-        // Find mod from state to be safe
         const key = KEYS[STATS.indexOf(s)];
-        // We can't access computed mods easily without recalculating or reading DOM.
-        // Reading DOM is safer for "what you see is what you get"
         const mEl = document.getElementById('mod_' + key);
         if (mEl) mod = parseInt(mEl.innerText.replace('+', ''));
     }
-    // ... complete logic for other checks if needed, or rely on user to verify
     logRoll(s, mod);
 };
 
@@ -242,7 +361,7 @@ window.distributeAttributes = async function () {
         if (el) el.value = STANDARD[idx];
     });
 
-    updateAll();
+    window.updateAll();
     showToast(`Atributos asignados para ${mainClass}.`);
 };
 
@@ -297,9 +416,60 @@ window.autoDistributeSkills = function () {
             }
         }
     }
-    updateAll();
+    window.updateAll();
     showToast("Puntos de habilidad distribuidos.");
 };
 
-// --- Roll Custom Dice (Global Wrapper) ---
-window.rollCustomDice = rollCustomDice;
+// --- Export/Import JSON ---
+window.saveData = function () {
+    const dataStr = JSON.stringify(state, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${state.name || 'personaje'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Ficha exportada correctamente");
+};
+
+window.loadData = function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            window.loadDataFromJSON(data);
+            showToast("Ficha importada correctamente");
+        } catch (err) {
+            showCustomAlert("Error al importar: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+};
+
+// --- Roll Formula (Dice Tray) ---
+window.rollFormula = function () {
+    const count = parseInt(document.getElementById('diceCount')?.value) || 1;
+    const sides = parseInt(document.getElementById('diceType')?.value) || 20;
+    const mod = parseInt(document.getElementById('diceMod')?.value) || 0;
+
+    let total = 0;
+    let rolls = [];
+    for (let i = 0; i < count; i++) {
+        const roll = Math.floor(Math.random() * sides) + 1;
+        rolls.push(roll);
+        total += roll;
+    }
+    total += mod;
+
+    logRoll(`${count}d${sides}${mod >= 0 ? '+' : ''}${mod}`, mod, total, `Dados: [${rolls.join(', ')}]`);
+};
+
+// --- Roll D20 ---
+window.rollD20 = function () {
+    const roll = Math.floor(Math.random() * 20) + 1;
+    logRoll("d20", 0, roll);
+};
