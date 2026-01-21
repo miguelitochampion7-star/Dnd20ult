@@ -21,9 +21,10 @@ function createModalHTML() {
 }
 
 // Ensure HTML exists on load
+// Ensure HTML exists on load
 document.addEventListener('DOMContentLoaded', createModalHTML);
 
-window.showCustomConfirm = function (message, title = "Confirmación") {
+export function showCustomConfirm(message, title = "Confirmación") {
     return new Promise((resolve) => {
         createModalHTML();
         const overlay = document.getElementById('custom-modal-overlay');
@@ -73,9 +74,9 @@ window.showCustomConfirm = function (message, title = "Confirmación") {
             }, 300);
         }
     });
-};
+}
 
-window.showCustomAlert = function (message, title = "Información") {
+export function showCustomAlert(message, title = "Información") {
     return new Promise((resolve) => {
         createModalHTML();
         const overlay = document.getElementById('custom-modal-overlay');
@@ -117,9 +118,9 @@ window.showCustomAlert = function (message, title = "Información") {
             }, 300);
         }
     });
-};
+}
 
-window.showToast = function (message, type = 'success') {
+export function showToast(message, type = 'success') {
     createModalHTML();
     const container = document.getElementById('toast-container');
 
@@ -154,7 +155,7 @@ window.showToast = function (message, type = 'success') {
             if (toast.parentElement) toast.parentElement.removeChild(toast);
         }, 300);
     }, 4000);
-};
+}
 
 /* --- OVERRIDE NATIVE --- */
 // Uncomment to force global override if desired,
