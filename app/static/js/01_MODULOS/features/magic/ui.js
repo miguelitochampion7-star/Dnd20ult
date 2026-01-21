@@ -4,6 +4,7 @@ import { SPELL_DB } from '../../../02_DATOS/data/spells.js';
 import { showToast, showCustomConfirm } from '../../modals.js';
 import { getCasterClasses, getMaxSpellLevel, getSlotsForClass, getAvailableSpellsForClass } from './core.js';
 import { getClassColor, getClassBg } from './data_parser.js';
+import { showSpellInfoCard, closeSpellInfoCard } from './spell_card.js';
 
 // --- STATE TRACKING ---
 let selectedClassIndex = 0; // For multiclass UI toggle
@@ -273,44 +274,9 @@ window.magic_selectClass = function (idx) {
     renderMagicUI();
 }
 
-// --- POPUPS & SPELL ACTIONS ---
-
-export function showSpellInfoCard(spellName) {
-    const spell = SPELL_DB.find(s => s.n === spellName);
-    if (!spell) {
-        showToast(`Hechizo no encontrado: ${spellName}`);
-        return;
-    }
-    const existing = document.getElementById('spellInfoModal');
-    if (existing) existing.remove();
-
-    const html = `
-        <div id="spellInfoModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onclick="window.closeSpellInfoCard()">
-            <div class="bg-[#1a120b] border-2 border-[#c5a059] rounded-lg max-w-md w-full p-4 max-h-[80vh] overflow-y-auto custom-scroll shadow-2xl" onclick="event.stopPropagation()">
-                <div class="flex justify-between items-start mb-3">
-                    <h3 class="text-lg font-bold text-[#c5a059] flex items-center gap-2"><span class="text-blue-400">ⓘ</span> ${spell.n}</h3>
-                    <button onclick="window.closeSpellInfoCard()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
-                </div>
-                <div class="space-y-1 text-sm text-gray-300">
-                    ${spell.s ? `<p><span class="text-purple-400">📚 Escuela:</span> ${spell.s}</p>` : ''}
-                    ${spell.l ? `<p><span class="text-yellow-400">⭐ Nivel:</span> ${spell.l}</p>` : ''}
-                    ${spell.r ? `<p><span class="text-blue-400">🎯 Alcance:</span> ${spell.r}</p>` : ''}
-                    ${spell.t ? `<p><span class="text-green-400">⏱ Lanzamiento:</span> ${spell.t}</p>` : ''}
-                    ${spell.dur ? `<p><span class="text-cyan-400">⌛ Duración:</span> ${spell.dur}</p>` : ''}
-                    ${spell.c ? `<p><span class="text-orange-400">📜 Componentes:</span> ${spell.c}</p>` : ''}
-                    ${spell.sv ? `<p><span class="text-red-400">💪 Salvación:</span> ${spell.sv}</p>` : ''}
-                    ${spell.sr ? `<p><span class="text-gray-400">🛡 R. Conjuros:</span> ${spell.sr}</p>` : ''}
-                </div>
-                ${spell.d ? `<hr class="my-3 border-[#333]"><p class="text-xs text-gray-400 whitespace-pre-wrap leading-relaxed">${spell.d}</p>` : ''}
-            </div>
-        </div>`;
-    document.body.insertAdjacentHTML('beforeend', html);
-}
-
-export function closeSpellInfoCard() {
-    const modal = document.getElementById('spellInfoModal');
-    if (modal) modal.remove();
-}
+// showSpellInfoCard and closeSpellInfoCard are now imported from spell_card.js
+// Re-export them for main.js compatibility
+export { showSpellInfoCard, closeSpellInfoCard };
 
 export function addSpellFromDB(name, lvl) {
     if (state.spells.some(s => s.n === name)) {
