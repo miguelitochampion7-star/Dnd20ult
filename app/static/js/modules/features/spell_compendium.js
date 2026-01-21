@@ -3,8 +3,10 @@ import { state, globalFlags } from '../../core/state.js';
 import { SPELL_KNOWN, CLASSES, SPELLS_PER_DAY } from '../../config.js';
 import { showToast } from '../ui/modals.js';
 
-// Global SPELL_DB access
-const getDB = () => window.SPELL_DB || [];
+import { SPELL_DB } from '../data/spells.js';
+
+// Global SPELL_DB access removed
+
 
 // Helper from stats.js logic
 import { calculateModifier } from '../mechanics/stats.js';
@@ -48,7 +50,7 @@ export function getSpellSlots(className, classLevel, attrMod = 0) {
 // ========================================
 
 export function showSpellInfoCard(spellName) {
-    const spell = getDB().find(s => s.n === spellName);
+    const spell = SPELL_DB.find(s => s.n === spellName);
     if (!spell) {
         showToast(`Hechizo no encontrado: ${spellName}`);
         return;
@@ -243,7 +245,7 @@ export function renderCompendiumContent() {
     const lvl = casterClass ? casterClass.lvl : 1;
     const maxSpellLvl = getMaxSpellLevel(cls, lvl);
 
-    let available = getDB().map(s => {
+    let available = SPELL_DB.map(s => {
         return { ...s, castLvl: getSpellLevelForClass(s.l, cls) };
     }).filter(s => s.castLvl !== null && s.castLvl !== undefined && s.castLvl <= maxSpellLvl);
 

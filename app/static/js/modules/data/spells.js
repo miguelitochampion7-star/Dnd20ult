@@ -1,4 +1,4 @@
-const SPELL_DB = [
+export const SPELL_DB = [
     {
         "n": "Eliminar maldición: Libera a un objeto o persona de la maldición.                                                                   Piedras de púas: Las criaturas en el área reciben 1d8 de daño, pueden ser ralentizadas.",
         "s": "Adivinación: Espía al sujeto desde la distancia.                                                                                    Invocar al aliado de la naturaleza IV: Llama a la criatura a luchar.",

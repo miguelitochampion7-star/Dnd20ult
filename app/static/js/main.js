@@ -6,7 +6,7 @@ import {
     toggleCompendium, addSpellFromDB, remSpell, toggleSpellCard,
     showSpellInfoCard, closeSpellInfoCard, toggleSpellSlot, resetSpellSlots
 } from './modules/features/spell_compendium.js';
-import { openGenerator, runGenerator } from './modules/features/archetype_generator.js';
+import { openGenerator, runGenerator } from './modules/features/archetypes/generator.js';
 import { switchTab, toggleSidebar, toggleFullScreen } from './modules/ui/tabs.js';
 import { showCustomAlert, showCustomConfirm, showToast } from './modules/ui/modals.js';
 import { rollCustomDice, logRoll, rollDamage } from './modules/mechanics/dice.js';

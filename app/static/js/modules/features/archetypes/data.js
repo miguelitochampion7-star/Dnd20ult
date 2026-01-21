@@ -1,4 +1,4 @@
-const ARCHETYPES = {
+export const ARCHETYPES = {
     'Barbaro': {
         role: 'combat',
         priorities: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
