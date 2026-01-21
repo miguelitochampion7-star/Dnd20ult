@@ -5,6 +5,7 @@
 
 import { SPELL_DB } from '../../../02_DATOS/data/spells.js';
 import { showToast } from '../../modals.js';
+import { formatSpellDescription, DESCRIPTION_STYLES } from './description_parser.js';
 
 // School Color Mapping
 const SCHOOL_COLORS = {
@@ -115,10 +116,10 @@ export function showSpellInfoCard(spellName) {
             </div>
 
             <!-- Description -->
-            <div class="p-4 max-h-48 overflow-y-auto custom-scroll bg-black/20">
-                <p class="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    ${spell.d ? spell.d : '<span class="text-gray-600 italic">Sin descripción disponible en la base de datos.</span>'}
-                </p>
+            <div class="p-4 max-h-72 overflow-y-auto custom-scroll bg-black/20">
+                <div class="spell-desc-container">
+                    ${formatSpellDescription(spell.d)}
+                </div>
             </div>
 
             <!-- Combat Footer -->
@@ -139,6 +140,7 @@ export function showSpellInfoCard(spellName) {
     <style>
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+        ${DESCRIPTION_STYLES}
     </style>`;
 
     document.body.insertAdjacentHTML('beforeend', html);
