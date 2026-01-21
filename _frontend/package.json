@@ -1,0 +1,16 @@
+{
+  "name": "_frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tailwindcss -i ./src/input.css -o ../app/static/css/styles.css --minify",
+    "watch": "npx tailwindcss -i ./src/input.css -o ../app/static/css/styles.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

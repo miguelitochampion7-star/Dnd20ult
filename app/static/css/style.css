@@ -1,0 +1,596 @@
+/* --- TEMA: ABYSSAL GOLD --- */
+:root {
+    --bg-void: #050505;
+    --bg-panel: #120c0a;
+    --border-gold: #9d7d4f;
+    --border-dim: #382c24;
+    --text-main: #dcdcdc;
+    --text-gold: #d4af37;
+    --text-blood: #b91c1c;
+    --accent-green: #15803d;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-void);
+    background-image: radial-gradient(circle at 50% 50%, #1a120b 0%, #050302 100%);
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+/* --- HIDE NUMBER SPINNERS --- */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* --- CUSTOM SPINNERS --- */
+.input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* Ensure inner input doesn't overlap buttons */
+.input-wrapper input[type="number"] {
+    padding-right: 1.2rem;
+}
+
+.spinner-controls {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    bottom: 2px;
+    width: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    z-index: 10;
+}
+
+.spinner-btn {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-gold);
+    opacity: 0.5;
+    transition: all 0.2s;
+    font-size: 8px;
+    line-height: 1;
+}
+
+.spinner-btn:hover {
+    background: var(--text-gold);
+    color: black;
+    opacity: 1;
+}
+
+.spinner-btn.up {
+    border-radius: 2px 2px 0 0;
+    margin-bottom: 1px;
+}
+
+.spinner-btn.down {
+    border-radius: 0 0 2px 2px;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* --- LAYOUT --- */
+.app-shell {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    height: 100%;
+    max-width: 1920px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+    .app-shell {
+        display: block;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 85%;
+        max-width: 320px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-out;
+        border-right: 2px solid var(--text-gold);
+        z-index: 9999;
+        background-color: #0c0806;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        padding-top: 3.5rem !important;
+    }
+}
+
+/* --- SIDEBAR (PC) --- */
+.sidebar {
+    background: #0a0605;
+    border-right: 1px solid var(--border-dim);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    z-index: 50;
+    box-shadow: 5px 0 20px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    /* Ensure container doesn't spill */
+}
+
+/* Fix for flex scrolling */
+.sidebar-scroll-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    min-height: 0;
+    /* CRITICAL for flex scrolling */
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: var(--border-dim) #0a0605;
+}
+
+/* Webkit Scrollbar Styling for Sidebar */
+.sidebar-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-scroll-area::-webkit-scrollbar-thumb {
+    background: var(--border-gold);
+    border-radius: 3px;
+}
+
+.sidebar-scroll-area::-webkit-scrollbar-track {
+    background: #0a0605;
+}
+
+/* --- HEADER MÓVIL --- */
+.mobile-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3.5rem;
+    background: #0a0605;
+    border-bottom: 1px solid var(--text-gold);
+    z-index: 500;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    box-shadow: 0 2px 15px black;
+}
+
+@media (max-width: 1024px) {
+    .mobile-header {
+        display: flex;
+    }
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 800;
+    display: none;
+    backdrop-filter: blur(3px);
+}
+
+.overlay.open {
+    display: block;
+}
+
+.main-content {
+    flex-grow: 1;
+    height: 100%;
+    padding: 1rem;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231f1812' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* --- TABS --- */
+.tab-btn {
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: #888;
+    font-family: 'Cinzel';
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    background: var(--bg-panel);
+    color: var(--text-gold);
+    border: 1px solid var(--border-dim);
+    border-bottom: 1px solid var(--bg-panel);
+    margin-bottom: -1px;
+    z-index: 10;
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+/* --- COMPONENTS --- */
+h1,
+h2,
+.font-med {
+    font-family: 'MedievalSharp', cursive;
+}
+
+.font-cinzel {
+    font-family: 'Cinzel', serif;
+}
+
+.panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    border-top: 2px solid var(--text-gold);
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.panel-header {
+    font-family: 'Cinzel';
+    font-weight: 700;
+    color: var(--text-gold);
+    font-size: 0.85rem;
+    border-bottom: 1px solid #333;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.2rem;
+}
+
+.input-dark,
+.select-dark {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    color: white;
+    padding: 6px;
+    border-radius: 2px;
+    width: 100%;
+    font-family: 'Cormorant Garamond';
+}
+
+.select-dark {
+    font-family: 'Cinzel';
+    font-size: 0.8rem;
+    background: #1a1a1a;
+}
+
+.btn {
+    background: #1f1f1f;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 8px 12px;
+    font-family: 'Cinzel';
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    filter: brightness(1.2);
+}
+
+.btn-green {
+    background: #0f2910;
+    border-color: #15803d;
+    color: #86efac;
+}
+
+.btn-red {
+    background: #3a1b1b;
+    border-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+.btn-gold {
+    border-color: var(--text-gold);
+    color: var(--text-gold);
+}
+
+/* --- DICE TRAY --- */
+.dice-btn {
+    background: #111;
+    border: 1px solid #333;
+    color: #888;
+    border-radius: 4px;
+    padding: 4px;
+    font-family: 'Cinzel';
+    font-weight: bold;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.dice-btn:hover {
+    border-color: #aaa;
+    color: white;
+    background: #222;
+}
+
+.dice-btn:active {
+    transform: scale(0.95);
+}
+
+/* --- SAVE BOXES --- */
+.save-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-box:hover {
+    border-color: var(--text-gold);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.save-box .lbl {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: bold;
+}
+
+.save-box .val {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-green);
+    line-height: 1;
+}
+
+.rpg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.rpg-table th {
+    text-align: left;
+    color: var(--text-gold);
+    padding: 4px;
+    border-bottom: 1px solid #444;
+    font-family: 'Cinzel';
+    font-size: 0.7rem;
+}
+
+.rpg-table td {
+    padding: 4px;
+    border-bottom: 1px solid #222;
+}
+
+.rpg-table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.buff-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 2px;
+    border-radius: 2px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.buff-item.active {
+    border-color: #15803d;
+    background: rgba(21, 128, 61, 0.15);
+}
+
+.buff-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #333;
+}
+
+.buff-item.active .buff-indicator {
+    background: #4ade80;
+    box-shadow: 0 0 5px #4ade80;
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #3e2723;
+    border-radius: 3px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: #0c0806;
+}
+
+/* --- MOBILE OPTIMIZATION --- */
+
+/* Sidebar Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(2px);
+}
+
+.overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+@media (max-width: 1024px) {
+
+    /* 1. Shell Re-structure */
+    .app-shell {
+        display: block;
+        /* Stack instead of Grid */
+        height: calc(100vh - 50px);
+        /* Subtract header */
+    }
+
+    /* 2. Sidebar Drawer */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        height: 100dvh;
+        width: 280px;
+        z-index: 9999;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-right: 1px solid var(--border-gold);
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* Remove redundant scroll-padding on mobile */
+    .sidebar-scroll-area {
+        height: calc(100% - 60px);
+        /* Adjust for header inside sidebar */
+    }
+
+    /* 3. Main Content Full Width */
+    main {
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* 4. Modals (Generator, Compendium) */
+    /* Target modals by ID or heuristic since they are injected */
+    #genModal>div,
+    #compendiumModal>div {
+        width: 90% !important;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    /* Compendium specific height fix */
+    #compendiumModal .h-\[80vh\] {
+        height: 85vh;
+    }
+
+    /* 5. Typography Boost */
+    body {
+        font-size: 14px;
+        /* Base size increase */
+    }
+
+    input[type="number"],
+    .btn,
+    select {
+        font-size: 14px !important;
+        /* Touch friendly */
+    }
+
+    /* 6. Tabs Navigation */
+    .border-t.border-\[\#333\].p-2.bg-black\/80 {
+        padding-bottom: 20px;
+        /* Safety for Home Bar */
+        overflow-x: auto;
+        /* Allow scroll if needed on tiny screens */
+    }
+
+    .tab-btn {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    /* 7. Grid Adaptations */
+    #statsGrid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        /* Force 3 cols */
+    }
+
+    /* 8. Header Panel (Name Fix) */
+    .header-panel {
+        display: flex !important;
+        flex-direction: column;
+        gap: 10px;
+        height: auto !important;
+    }
+
+    .header-panel>div {
+        width: 100%;
+        grid-column: auto !important;
+    }
+
+    /* Adjust stats container to spread out */
+    .header-panel>div:last-child {
+        justify-content: space-around;
+        padding-top: 5px;
+        border-top: 1px solid #333;
+    }
+
+    /* 9. Touch-Friendly Scrollbars */
+    .custom-scroll::-webkit-scrollbar {
+        width: 12px;
+        /* Thicker for touch */
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: #5e3a2a;
+        /* Lighter for visibility */
+        border: 2px solid #0c0806;
+        /* Padded look */
+    }
+}
+
+```

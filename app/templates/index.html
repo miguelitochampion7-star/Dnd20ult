@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Ultimate D20 Ch'Sheet</title>
+    <!-- Tailwind -->
+    <!-- Tailwind (Local) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=MedievalSharp&display=swap"
+        rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- API Client -->
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+</head>
+
+<body>
+
+    <!-- Overlay for Mobile Sidebar -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()"
+                class="text-[#c5a059] p-2 border border-[#333] rounded bg-[#1a120b] active:bg-[#333]">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <span class="font-med text-[#c5a059] text-lg tracking-wide">The Ultimate D20</span>
+        </div>
+        <div
+            class="test-[10px] text-gray-500 font-bold border border-gray-800 rounded px-2 py-1 bg-black flex gap-2 items-center">
+            <span>v3.5</span>
+            <button onclick="toggleFullScreen()"
+                class="bg-[#222] text-[#c5a059] border border-[#c5a059] p-1 rounded hover:bg-[#c5a059] hover:text-black transition-colors">
+                <i data-lucide="maximize" class="w-4 h-4"></i>
+            </button>
+            <button onclick="openGenerator()"
+                class="bg-[#c5a059] text-black text-[10px] font-bold px-2 py-0.5 rounded hover:bg-white transition-colors animate-pulse">
+                ⚡ GEN
+            </button>
+        </div>
+    </div>
+
+    <div class="app-shell">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="p-4 border-b border-[#333] flex justify-between items-start bg-[#0c0806]">
+                <div>
+                    <div class="flex items-center gap-4">
+                        <h1 class="text-2xl font-bold text-[#c5a059] tracking-wider drop-shadow-md leading-none">
+                            THE ULTIMATE <br>
+                            <span class="text-white text-sm tracking-[0.3em] opacity-80">D20 CH'SHEET</span>
+                        </h1>
+                        <button onclick="openGenerator()"
+                            class="bg-[#c5a059] text-black text-[10px] font-bold px-2 py-1 rounded hover:bg-white transition-colors animate-pulse mb-2">
+                            ⚡ ARQUETIPO
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-gray-500 uppercase font-bold">Gestor de Personajes</p>
+                </div>
+                <button onclick="toggleSidebar()"
+                    class="lg:hidden text-red-400 p-2 border border-red-900 rounded bg-red-900/10 active:scale-95">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-scroll-area p-4 space-y-6">
+
+                <!-- Advanced Dice Tray -->
+                <div class="bg-black/40 p-3 rounded border border-[#333]">
+                    <h3 class="font-cinzel text-xs text-green-400 font-bold mb-2 flex items-center gap-2">
+                        <i data-lucide="dices" class="w-3 h-3"></i> Bandeja de Dados
+                    </h3>
+
+                    <!-- Quick Dice Grid -->
+                    <div class="grid grid-cols-4 gap-1 mb-2">
+                        <button onclick="rollCustomDice(4)" class="dice-btn">d4</button>
+                        <button onclick="rollCustomDice(6)" class="dice-btn">d6</button>
+                        <button onclick="rollCustomDice(8)" class="dice-btn">d8</button>
+                        <button onclick="rollCustomDice(10)" class="dice-btn">d10</button>
+                        <button onclick="rollCustomDice(12)" class="dice-btn">d12</button>
+                        <button onclick="rollCustomDice(20)"
+                            class="dice-btn text-[#c5a059] border-[#c5a059]">d20</button>
+                        <button onclick="rollCustomDice(100)" class="dice-btn col-span-2">d100</button>
+                    </div>
+
+                    <!-- Custom Formula -->
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="number" id="diceCount" value="1"
+                            class="w-8 text-center bg-black/50 border border-[#333] rounded text-xs text-white" min="1">
+                        <span class="text-gray-500 text-xs">d</span>
+                        <select id="diceType" class="bg-black/50 border border-[#333] rounded text-xs text-white w-12">
+                            <option value="4">4</option>
+                            <option value="6">6</option>
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="20" selected>20</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span class="text-gray-500 text-xs">+</span>
+                        <input type="number" id="diceMod" value="0"
+                            class="w-8 text-center bg-black/50 border border-[#333] rounded text-xs text-white">
+                    </div>
+                    <button onclick="rollFormula()" class="btn w-full btn-green text-xs">Lanzar</button>
+                </div>
+
+
+
+                <!-- Buffs -->
+                <div>
+                    <h3 class="font-cinzel text-xs text-gray-400 font-bold mb-2 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-3 h-3 text-yellow-500"></i> Buffs Activos
+                    </h3>
+                    <div id="buffsContainer"></div>
+                </div>
+
+                <!-- Log -->
+                <div>
+                    <h3 class="font-cinzel text-xs text-gray-400 font-bold mb-2 flex items-center gap-2">
+                        <i data-lucide="scroll" class="w-3 h-3"></i> Historial
+                    </h3>
+                    <div id="diceLog"
+                        class="bg-black/60 border border-[#333] rounded p-2 font-mono text-[11px] text-green-500 h-32 overflow-y-auto">
+                        <div class="opacity-50">> Sistema listo.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-[#333] grid grid-cols-2 gap-2 bg-[#0c0806]">
+                <a href="/dashboard" class="btn btn-blue text-xs text-center flex items-center justify-center gap-1">
+                    <i data-lucide="arrow-left" class="w-3 h-3"></i> Mis Fichas
+                </a>
+                <button onclick="manualSave()" class="btn btn-gold text-xs">Guardar Ahora</button>
+                <button onclick="saveData()" class="btn btn-green text-xs">Exportar JSON</button>
+                <button onclick="document.getElementById('fileInput').click()" class="btn text-xs">Importar
+                    Ficha</button>
+                <input type="file" id="fileInput" class="hidden" onchange="loadData(event)">
+                <button onclick="deleteFicha()" class="btn btn-red col-span-2 text-xs">Eliminar Ficha</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content flex flex-col h-full overflow-y-auto custom-scroll relative">
+
+            <!-- Persistent Header Widget -->
+            <div class="panel header-panel flex-shrink-0 grid grid-cols-12 gap-2 items-center mb-4 py-2 bg-[#120c0a]">
+                <div class="col-span-4 md:col-span-3 flex items-center gap-4">
+                    <input type="text" id="charName"
+                        class="input-dark text-xl font-cinzel text-[#c5a059] border-none pl-0 bg-transparent"
+                        placeholder="Nombre..." oninput="updateAll()">
+                    <span id="save-indicator" class="text-sm text-gray-500"></span>
+                </div>
+
+                <!-- Quick Stats Summary -->
+                <div class="col-span-8 md:col-span-9 flex justify-end items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="heart" class="w-4 h-4 text-red-600"></i>
+                        <input type="number" id="hpCurr"
+                            class="bg-transparent text-right text-xl font-bold text-red-500 w-12 focus:outline-none"
+                            value="10" oninput="updateAll()">
+                        <span class="text-xs text-gray-500">/ <span id="hpMax">10</span></span>
+                        <button onclick="restCharacter()" class="ml-2 text-green-500 hover:text-white"
+                            title="Descanso Largo (Recuperar Saludy y Conjuros)">
+                            <i data-lucide="moon" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="h-6 w-[1px] bg-[#333]"></div>
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="rollD20()">
+                        <i data-lucide="shield" class="w-4 h-4 text-blue-500"></i>
+                        <span id="valAC" class="text-xl font-bold text-blue-400">10</span>
+                    </div>
+                    <div class="h-6 w-[1px] bg-[#333]"></div>
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="rollCheck('Initiative')">
+                        <i data-lucide="rabbit" class="w-4 h-4 text-white"></i>
+                        <span id="valInit" class="text-xl font-bold text-white">+0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex gap-1 border-b border-[#333] mb-4 overflow-x-auto flex-shrink-0">
+                <button onclick="switchTab('general')" class="tab-btn active" id="btn-general">General</button>
+                <button onclick="switchTab('combat')" class="tab-btn" id="btn-combat">Combate</button>
+                <button onclick="switchTab('skills')" class="tab-btn" id="btn-skills">Habilidades</button>
+                <button onclick="switchTab('magic')" class="tab-btn" id="btn-magic">Magia</button>
+                <button onclick="switchTab('inventory')" class="tab-btn" id="btn-inventory">Inventario</button>
+            </nav>
+
+            <!-- Tab Content Container -->
+            <div class="flex-grow relative pb-10">
+
+                <!-- TAB: GENERAL -->
+                <div id="tab-general" class="tab-content space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="panel space-y-2">
+                            <div class="panel-header">Identidad</div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="text-[9px] text-gray-500 uppercase">Raza</label><select
+                                        id="raceSelect" class="select-dark" onchange="updateAll()"></select></div>
+                                <div><label class="text-[9px] text-gray-500 uppercase">Alineamiento</label><select
+                                        id="alignSelect" class="select-dark">
+                                        <option>Neutral</option>
+                                        <option>Legal Bueno</option>
+                                        <option>Caótico Maligno</option>
+                                    </select></div>
+                            </div>
+                        </div>
+                        <div class="panel space-y-2">
+                            <div class="panel-header">Clases <span class="text-[9px] text-white float-right">Nvl: <span
+                                        id="totalLevel">1</span></span></div>
+                            <div id="classList" class="space-y-1"></div>
+                            <div class="flex gap-1 mt-1 pt-2 border-t border-[#222]">
+                                <select id="addClassSelect" class="select-dark text-xs flex-grow"></select>
+                                <button onclick="addClass()" class="btn btn-green text-xs px-3">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header flex justify-between items-center">
+                            <span>Atributos (Click para tirar)</span>
+                            <button onclick="distributeAttributes()"
+                                class="text-[9px] bg-[#c5a059]/20 text-[#c5a059] border border-[#c5a059] px-2 py-0.5 rounded hover:bg-[#c5a059] hover:text-black transition-colors font-bold uppercase tracking-wider"
+                                title="Asignar Array Estándar (15,14,13,12,10,8)">
+                                Distribución Estándar
+                            </button>
+                        </div>
+                        <div id="statsGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
+                    </div>
+
+                    <div class="panel max-w-lg mx-auto">
+                        <div class="panel-header">Salvaciones</div>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div onclick="rollCheck('Fortaleza')" class="save-box">
+                                <div class="lbl">Fortaleza</div>
+                                <div id="saveFort" class="val">+0</div>
+                            </div>
+                            <div onclick="rollCheck('Reflejos')" class="save-box">
+                                <div class="lbl">Reflejos</div>
+                                <div id="saveRef" class="val">+0</div>
+                            </div>
+                            <div onclick="rollCheck('Voluntad')" class="save-box">
+                                <div class="lbl">Voluntad</div>
+                                <div id="saveWill" class="val">+0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: COMBAT -->
+                <div id="tab-combat" class="tab-content hidden space-y-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="panel py-2">
+                            <div class="text-xs text-gray-500">Toque</div>
+                            <div id="valTouch" class="text-2xl font-bold text-purple-400">10</div>
+                        </div>
+                        <div class="panel py-2">
+                            <div class="text-xs text-gray-500">Desprevenido</div>
+                            <div id="valFlat" class="text-2xl font-bold text-gray-400">10</div>
+                        </div>
+                        <div class="panel py-2 cursor-pointer hover:bg-white/5" onclick="rollCheck('BAB')">
+                            <div class="text-xs text-gray-500">BAB</div>
+                            <div id="valBAB" class="text-2xl font-bold text-white">+0</div>
+                        </div>
+                        <div class="panel py-2 cursor-pointer hover:bg-white/5" onclick="rollCheck('Presa')">
+                            <div class="text-xs text-gray-500">Presa</div>
+                            <div id="valGrapple" class="text-2xl font-bold text-white">+0</div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">Desglose de CA</div>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div><label class="text-[9px]">Armadura</label><input type="number" id="acArmor" value="0"
+                                    class="input-dark text-center" oninput="updateAll()"></div>
+                            <div><label class="text-[9px]">Escudo</label><input type="number" id="acShield" value="0"
+                                    class="input-dark text-center" oninput="updateAll()"></div>
+                            <div><label class="text-[9px]">Natural</label><input type="number" id="acNatural" value="0"
+                                    class="input-dark text-center" oninput="updateAll()"></div>
+                            <div><label class="text-[9px]">Desvío</label><input type="number" id="acDeflect" value="0"
+                                    class="input-dark text-center" oninput="updateAll()"></div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">Ataques</div>
+                        <div class="flex gap-2 mb-2">
+                            <select id="weaponSelect" class="select-dark text-xs flex-grow"></select>
+                            <button onclick="addWeapon()" class="btn btn-green text-xs">Equipar</button>
+                        </div>
+                        <div id="attacksList" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- TAB: SKILLS 2.0 -->
+                <div id="tab-skills" class="tab-content hidden">
+                    <div class="panel flex flex-col">
+                        <div class="panel-header flex justify-between items-center">
+                            <span>Habilidades</span>
+                            <div class="flex gap-2 text-[10px] items-center">
+                                <button id="btnAutoSkill" onclick="autoDistributeSkills()"
+                                    class="hidden bg-[#c5a059] text-black px-2 py-0.5 rounded font-bold hover:bg-white transition-colors animate-pulse">Auto-Asignar</button>
+                                <span class="text-[#c5a059]">Puntos: <span id="skillPts">0</span></span>
+                                <div class="flex items-center gap-1 ml-2">
+                                    <i data-lucide="shield" class="w-3 h-3 text-red-900"></i>
+                                    <!-- Manual override allowed via small input -->
+                                    <input type="number" id="acpArmor" value="0"
+                                        class="w-6 bg-transparent text-center text-[10px] text-red-900 font-bold border-b border-transparent hover:border-red-900"
+                                        oninput="updateAll()" title="Penalizador de Armadura (ACP)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grid Header -->
+                        <div
+                            class="grid grid-cols-12 gap-1 px-2 py-1 text-[9px] uppercase text-gray-600 font-bold border-b border-[#222]">
+                            <div class="col-span-6">Habilidad</div>
+                            <div class="col-span-2 text-center">Rango</div>
+                            <div class="col-span-2 text-center">Misc</div>
+                            <div class="col-span-2 text-right">Total</div>
+                        </div>
+
+                        <!-- Skills Grid -->
+                        <div class="" id="skillsBody">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: MAGIC -->
+                <!-- TAB: MAGIC -->
+                <!-- TAB: MAGIC -->
+                <div id="tab-magic" class="tab-content hidden space-y-4">
+
+                    <!-- 1. GRIMORIO PERSONAL & CONJUROS (Unificado) -->
+                    <div class="panel">
+                        <div class="panel-header flex justify-between items-center">
+                            <span class="text-blue-400 flex items-center gap-2">
+                                <i data-lucide="book-open" class="w-4 h-4"></i> Grimorio & Conjuros
+                            </span>
+                            <div class="flex gap-2">
+                                <button onclick="window.resetSpellSlots && window.resetSpellSlots()"
+                                    class="text-[10px] text-gray-400 hover:text-white border border-[#333] px-2 py-1 rounded hover:bg-white/10 transition flex items-center gap-1"
+                                    title="Restaurar todos los espacios">
+                                    <i data-lucide="moon" class="w-3 h-3"></i> Descanso
+                                </button>
+                                <button id="btnCompendium" onclick="toggleCompendium()"
+                                    class="text-xs bg-[#c5a059]/20 text-[#c5a059] border border-[#c5a059] px-2 py-1 rounded hover:bg-[#c5a059] hover:text-black transition-colors font-bold flex items-center gap-2">
+                                    <i data-lucide="book" class="w-3 h-3"></i>
+                                    <span>+ Compendio</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="spellsList" class="space-y-1 max-h-[80vh] overflow-y-auto custom-scroll p-1">
+                            <p class="text-gray-500 text-xs italic p-2">Sin hechizos en grimorio.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. COMPENDIO (Panel Expandible) -->
+                    <div id="compendiumPanel" class="hidden panel border-[#c5a059] relative">
+                        <div class="panel-header text-[#c5a059] flex justify-between items-center bg-[#c5a059]/10">
+                            <span>📚 Compendio de Hechizos</span>
+                            <button onclick="toggleCompendium()" class="text-gray-400 hover:text-white">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div id="compendiumList" class="max-h-80 overflow-y-auto custom-scroll space-y-1 p-1">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: INVENTORY -->
+            <div id="tab-inventory" class="tab-content hidden h-full overflow-y-auto custom-scroll pr-2 space-y-4">
+                <div class="panel">
+                    <div class="panel-header">Equipo & Pertenencias</div>
+                    <textarea id="inventory"
+                        class="w-full h-64 bg-black/20 border border-[#333] text-sm text-gray-300 p-2 resize-none rounded focus:border-[#c5a059] focus:outline-none"
+                        placeholder="Escribe aquí tu equipo..." oninput="updateAll()"></textarea>
+
+                    <div class="flex justify-between items-center mt-2 bg-black/30 p-2 rounded border border-[#222]">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="coins" class="w-4 h-4 text-yellow-500"></i>
+                            <input type="number" id="gold"
+                                class="input-dark w-24 text-right bg-transparent border-none p-0" value="0"
+                                oninput="updateAll()">
+                            <span class="text-xs font-bold text-gray-500">PO</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Peso Total: <span id="weightDisplay"
+                                class="text-white font-bold text-lg">0</span> lbs</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Carga y Capacidad</div>
+                    <div class="grid grid-cols-3 text-center text-xs text-gray-500 mb-2">
+                        <div>Ligera: <span id="maxLight" class="text-white">0</span></div>
+                        <div>Media: <span id="maxMedium" class="text-white">0</span></div>
+                        <div>Pesada: <span id="maxHeavy" class="text-white">0</span></div>
+                    </div>
+                    <div class="w-full bg-[#111] h-2 rounded-full overflow-hidden mb-2">
+                        <div id="loadBar" class="h-full bg-[#c5a059] w-0 transition-all duration-500"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <span id="loadStatus" class="text-[#c5a059]">Ligera</span>
+                        <div class="flex gap-4">
+                            <span id="loadMalus" class="text-red-400">ACP: 0</span>
+                            <span id="maxDexLoad" class="text-gray-400">Max Des: -</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+    </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/spells_db.js') }}?v=4"></script>
+    <script src="{{ url_for('static', filename='js/archetypes.js') }}?v=4"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}?v=5"></script>
+
+    <!-- Integration Script -->
+    <script>
+        // Configuración de la ficha actual
+        const FICHA_ID = "{{ ficha_id }}";
+        let autoSaver = null;
+
+        // Función para obtener todos los datos de la ficha
+        function getAllData() {
+            // La variable `state` es global, definida en engine.js
+            if (typeof state !== 'undefined') {
+                return state;
+            } else {
+                // Fallback: construir objeto básico desde DOM
+                return {
+                    name: document.getElementById('charName')?.value || '',
+                    race: document.getElementById('raceSelect')?.value || 'Humano',
+                    classes: [],
+                    stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }
+                };
+            }
+        }
+
+        // Cargar ficha al iniciar
+        async function loadFichaFromDB() {
+            if (FICHA_ID === 'new') {
+                // Nueva ficha - crear en BD
+                const result = await api.createFicha({
+                    nombre_personaje: 'Nuevo Personaje',
+                    data_json: getAllData()
+                });
+
+                if (result.success && result.ficha) {
+                    // Redirigir a la ficha recién creada
+                    window.location.href = `/ficha/${result.ficha.id}`;
+                } else {
+                    console.error('Error creando ficha:', result.error);
+                }
+            } else if (FICHA_ID !== 'None') {
+                // Cargar ficha existente
+                const result = await api.getFicha(FICHA_ID);
+
+                if (result.success && result.ficha) {
+                    // Cargar datos en la interfaz
+                    loadDataFromJSON(result.ficha.data_json);
+
+                    // Iniciar auto-guardado
+                    autoSaver = new AutoSaver(async () => {
+                        const data = getAllData();
+                        const nombre = document.getElementById('charName').value || 'Sin Nombre';
+
+                        await api.updateFicha(FICHA_ID, {
+                            nombre_personaje: nombre,
+                            data_json: data
+                        });
+                    }, 10000); // Guardar cada 10 segundos
+                } else {
+                    alert('Error cargando ficha: ' + result.error);
+                    window.location.href = '/dashboard';
+                }
+            }
+        }
+
+        // Función para guardar manualmente
+        async function manualSave() {
+            if (autoSaver) {
+                await autoSaver.forceSave();
+                window.showToast('✅ Ficha guardada correctamente');
+            }
+        }
+
+        // Función para eliminar ficha
+        async function deleteFicha() {
+            if (!FICHA_ID || FICHA_ID === 'new' || FICHA_ID === 'None') {
+                alert('No se puede eliminar una ficha no guardada');
+                return;
+            }
+
+            if (!await window.showCustomConfirm('⚠️ ¿Estás seguro de eliminar esta ficha de la base de datos?\\n\\nEsta acción no se puede deshacer.')) {
+                return;
+            }
+
+            const result = await api.deleteFicha(FICHA_ID);
+            if (result.success) {
+                window.showToast('✅ Ficha eliminada correctamente');
+                // Small delay to see toast
+                setTimeout(() => window.location.href = '/dashboard', 1000);
+            } else {
+                window.showToast('❌ Error al eliminar: ' + result.error, 'error');
+            }
+        }
+
+        // Sobrescribir updateAll para activar auto-guardado
+        if (typeof updateAll === 'function') {
+            const originalUpdateAll = updateAll;
+            window.updateAll = function () {
+                originalUpdateAll();
+                if (autoSaver) {
+                    autoSaver.markDirty();
+                }
+            };
+        }
+
+        // Función auxiliar para cargar datos desde JSON
+        // Función auxiliar para cargar datos desde JSON
+        function loadDataFromJSON(data) {
+            if (!data) return;
+
+            // 1. Restaurar Estado Global
+            // Aseguramos que la estructura sea completa mezclando con el default por si faltan campos nuevos
+            // Deep merge es difícil en vanilla puro sin deps, pero Object.assign nivel 1 sirve.
+            // Mejor: Asignar y luego validar.
+            Object.assign(state, data);
+
+            // 2. Restaurar Inputs del DOM (Para que readInputs no sobrescriba con nulos)
+
+            // Basics
+            setVal('charName', state.name);
+            setVal('raceSelect', state.race);
+            // setVal('alignSelect', state.align); // Si existe en el DOM
+
+            // Stats
+            if (state.stats) {
+                ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(k => {
+                    setVal('base_' + k, state.stats[k]);
+                });
+            }
+
+            // Resources
+            setVal('hpCurr', state.hp_curr);
+            setVal('inventory', state.inventory);
+            setVal('gold', state.gold);
+
+            // Manual AC
+            if (state.ac_manual) {
+                setVal('acArmor', state.ac_manual.armor);
+                setVal('acShield', state.ac_manual.shield);
+                setVal('acNatural', state.ac_manual.natural);
+                setVal('acDeflect', state.ac_manual.deflect);
+                // setVal('acpArmor', state.acp_manual); // Si existe input
+            }
+
+            // 3. Renderizar todo (Clases, Skills, Spells se renderizan desde 'state' en updateAll)
+            updateAll();
+        }
+
+        function setVal(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.value = val !== undefined ? val : '';
+        }
+
+        // Cargar ficha cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFichaFromDB();
+        });
+    </script>
+</body>
+
+</html>

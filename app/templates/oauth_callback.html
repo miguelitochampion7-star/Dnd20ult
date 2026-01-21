@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticando...</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0404 0%, #1a0f0f 50%, #0a0404 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-center;
+            color: #c5a059;
+        }
+
+        .loader {
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid #c5a059;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+        <p>Autenticando con Google...</p>
+    </div>
+
+    <script>
+        // Supabase OAuth devuelve el token en el hash fragment
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const error = hashParams.get('error');
+        const errorDescription = hashParams.get('error_description');
+
+        if (error) {
+            alert('Error de autenticación: ' + (errorDescription || error));
+            window.location.href = '/login';
+        } else if (accessToken) {
+            // Enviar token al servidor para crear sesión
+            fetch('/auth/google/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ access_token: accessToken })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('Error al crear sesión: ' + (data.error || 'Desconocido'));
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(err => {
+                    alert('Error de conexión: ' + err.message);
+                    window.location.href = '/login';
+                });
+        } else {
+            alert('No se recibió token de autenticación');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+
+</html>

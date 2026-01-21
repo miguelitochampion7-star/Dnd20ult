@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - The Ultimate D20 Ch'Sheet</title>
+    <!-- Tailwind (Local) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0404 0%, #1a0f0f 50%, #0a0404 100%);
+            min-height: 100vh;
+        }
+
+        .title-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        .card {
+            background: rgba(18, 12, 10, 0.95);
+            border: 1px solid #333;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(197, 160, 89, 0.2);
+            border-color: #c5a059;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #c5a059 0%, #d4af37 100%);
+            color: #000;
+            font-weight: 700;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(197, 160, 89, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <nav class="bg-black/40 border-b border-[#333] backdrop-blur-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="title-font text-2xl font-bold text-[#c5a059]">The Ultimate D20</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-gray-400 text-sm">{{ user.email }}</span>
+                <a href="/logout" class="text-red-400 hover:text-red-300 text-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header + New Button -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="title-font text-4xl font-bold text-white mb-2">Mis Fichas</h2>
+                    <p class="text-gray-400">Gestiona tus personajes de D&D</p>
+                </div>
+                <a href="/ficha/nueva" class="btn-gold px-6 py-3 rounded-lg flex items-center gap-2 transition-all">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Nueva Ficha
+                </a>
+            </div>
+
+            <!-- Fichas Grid -->
+            <div id="fichas-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loading State -->
+                <div id="loading" class="col-span-full text-center py-12">
+                    <div
+                        class="animate-spin inline-block w-12 h-12 border-4 border-[#c5a059] border-t-transparent rounded-full">
+                    </div>
+                    <p class="text-gray-400 mt-4">Cargando fichas...</p>
+                </div>
+
+                <!-- Empty State (hidden by default) -->
+                <div id="empty-state" class="col-span-full text-center py-16 hidden">
+                    <i data-lucide="file-question" class="w-24 h-24 mx-auto text-gray-600 mb-4"></i>
+                    <h3 class="text-2xl text-gray-400 mb-2">No tienes fichas aún</h3>
+                    <p class="text-gray-500 mb-6">¡Crea tu primer personaje de D&D!</p>
+                    <a href="/ficha/nueva" class="btn-gold inline-flex items-center gap-2 px-6 py-3 rounded-lg">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Crear Primera Ficha
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cargar fichas al iniciar
+        async function cargarFichas() {
+            try {
+                const response = await fetch('/api/fichas');
+                const data = await response.json();
+
+                const loading = document.getElementById('loading');
+                const emptyState = document.getElementById('empty-state');
+                const container = document.getElementById('fichas-container');
+
+                loading.hidden = true;
+
+                if (data.success && data.fichas.length > 0) {
+                    emptyState.hidden = true;
+
+                    data.fichas.forEach(ficha => {
+                        const card = crearCardFicha(ficha);
+                        container.appendChild(card);
+                    });
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+
+                // Inicializar iconos de Lucide
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error cargando fichas:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-red-400">
+                        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4"></i>
+                        <p>Error al cargar fichas</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function crearCardFicha(ficha) {
+            const card = document.createElement('div');
+            card.className = 'card p-6 rounded-lg cursor-pointer relative group';
+
+            const data = ficha.data_json || {};
+            let nivel = 1;
+            let clase = 'Aventurero';
+
+            if (data.classes && Array.isArray(data.classes) && data.classes.length > 0) {
+                clase = data.classes.map(c => c.id).join(' / ');
+                nivel = data.classes.reduce((acc, c) => acc + (c.lvl || 0), 0);
+            } else {
+                // Fallback for legacy or empty
+                nivel = data.level || 1;
+                clase = data.class || 'Aventurero';
+            }
+            const raza = data.race || 'Humano';
+
+            const fechaUpdate = new Date(ficha.updated_at).toLocaleDateString('es-ES');
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <h3 class="title-font text-xl font-bold text-[#c5a059] mb-1">${ficha.nombre_personaje}</h3>
+                        <p class="text-gray-400 text-sm">${raza} ${clase} - Nivel ${nivel}</p>
+                    </div>
+                    ${ficha.es_favorita ? '<i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-current"></i>' : ''}
+                </div>
+
+                <div class="space-y-2 mb-4 text-sm text-gray-500">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        <span>Actualizado: ${fechaUpdate}</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <a href="/ficha/${ficha.id}" class="flex-1 bg-green-900/20 hover:bg-green-900/40 border border-green-700 text-green-400 py-2 rounded text-center text-sm transition-all">
+                        Editar
+                    </a>
+                    <button onclick="eliminarFicha('${ficha.id}', event)" class="bg-red-900/20 hover:bg-red-900/40 border border-red-700 text-red-400 px-4 py-2 rounded text-sm transition-all">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        async function eliminarFicha(id, event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!await window.showCustomConfirm('¿Estás seguro de eliminar esta ficha?')) return;
+
+            try {
+                const response = await fetch(`/api/fichas/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    location.reload();
+                } else {
+                    window.showCustomAlert('Error al eliminar: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.showCustomAlert('Error al eliminar la ficha');
+            }
+        }
+
+        // Cargar al inicio
+        cargarFichas();
+    </script>
+    <script src="{{ url_for('static', filename='js/modals.js') }}?v=4"></script>
+</body>
+
+</html>
