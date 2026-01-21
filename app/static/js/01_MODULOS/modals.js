@@ -157,8 +157,8 @@ export function showToast(message, type = 'success') {
     }, 4000);
 }
 
-/* --- OVERRIDE NATIVE --- */
-// Uncomment to force global override if desired,
-// but safer to call explicit functions to avoid breaking 3rd party scripts.
-// window.alert = window.showCustomAlert;
-// window.confirm = window.showCustomConfirm;
+// --- Global Exposure for Legacy Scripts (Dashboard, Index Inline) ---
+window.showCustomConfirm = showCustomConfirm;
+window.showCustomAlert = showCustomAlert;
+window.showToast = showToast;
+

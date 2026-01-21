@@ -189,7 +189,8 @@
             event.preventDefault();
             event.stopPropagation();
 
-            if (!await window.showCustomConfirm('¿Estás seguro de eliminar esta ficha?')) return;
+            // Confirmation removed by user request
+            // if (!await window.showCustomConfirm('¿Estás seguro de eliminar esta ficha?')) return;
 
             try {
                 const response = await fetch(`/api/fichas/${id}`, {
@@ -212,7 +213,7 @@
         // Cargar al inicio
         cargarFichas();
     </script>
-    <script src="{{ url_for('static', filename='js/modals.js') }}?v=4"></script>
+    <script type="module" src="{{ url_for('static', filename='js/01_MODULOS/modals.js') }}?v=5"></script>
 </body>
 
 </html>
