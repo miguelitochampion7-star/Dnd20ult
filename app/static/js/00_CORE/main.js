@@ -212,3 +212,94 @@ window.rollCheck = function (s) {
     // ... complete logic for other checks if needed, or rely on user to verify
     logRoll(s, mod);
 };
+
+// --- Standard Distribution ---
+window.distributeAttributes = async function () {
+    if (!await showCustomConfirm("¿Asignar automáticamente? Se sobrescribirán tus atributos actuales.")) return;
+
+    const STANDARD = [15, 14, 13, 12, 10, 8];
+
+    const PRIORITIES = {
+        'Barbaro': ['str', 'con', 'dex', 'wis', 'int', 'cha'],
+        'Bardo': ['cha', 'dex', 'int', 'con', 'wis', 'str'],
+        'Clerigo': ['wis', 'con', 'str', 'cha', 'int', 'dex'],
+        'Druida': ['wis', 'con', 'dex', 'int', 'str', 'cha'],
+        'Guerrero': ['str', 'con', 'dex', 'wis', 'int', 'cha'],
+        'Monje': ['wis', 'dex', 'str', 'con', 'int', 'cha'],
+        'Paladin': ['str', 'cha', 'wis', 'con', 'int', 'dex'],
+        'Explorador': ['dex', 'str', 'wis', 'con', 'int', 'cha'],
+        'Picaro': ['dex', 'int', 'cha', 'con', 'wis', 'str'],
+        'Hechicero': ['cha', 'dex', 'con', 'int', 'wis', 'str'],
+        'Mago': ['int', 'dex', 'con', 'wis', 'cha', 'str']
+    };
+
+    const mainClass = state.classes.length > 0 ? state.classes[0].id : 'Guerrero';
+    const prio = PRIORITIES[mainClass] || PRIORITIES['Guerrero'];
+
+    prio.forEach((key, idx) => {
+        state.stats[key] = STANDARD[idx];
+        const el = document.getElementById('base_' + key);
+        if (el) el.value = STANDARD[idx];
+    });
+
+    updateAll();
+    showToast(`Atributos asignados para ${mainClass}.`);
+};
+
+// --- Auto Distribute Skills ---
+window.autoDistributeSkills = function () {
+    let totalLvl = 0;
+    let totalPts = 0;
+
+    const intMod = parseInt(document.getElementById('mod_int')?.innerText) || 0;
+    const raceSp = (RACES[state.race] || {}).sp || 0;
+
+    state.classes.forEach((c, idx) => {
+        totalLvl += c.lvl;
+        const cd = CLASSES[c.id];
+        if (!cd) return;
+        let pts = Math.max(1, cd.sp + intMod + raceSp);
+        totalPts += (idx === 0 ? pts * 4 : pts) * c.lvl;
+    });
+
+    // Identify Class Skills
+    let classSkills = [];
+    state.classes.forEach(c => {
+        const cData = CLASSES[c.id];
+        if (cData && cData.cs) classSkills.push(...cData.cs);
+    });
+    classSkills = [...new Set(classSkills)];
+
+    // Calculate remaining
+    let remaining = totalPts;
+    let currentSpent = 0;
+    for (let k in state.skills) currentSpent += state.skills[k];
+    remaining -= currentSpent;
+
+    if (remaining <= 0) {
+        showCustomAlert("No quedan puntos de habilidad por asignar.");
+        return;
+    }
+
+    const maxRank = totalLvl + 3;
+    let anyChange = true;
+
+    while (remaining > 0 && anyChange) {
+        anyChange = false;
+        for (let skillName of classSkills) {
+            if (remaining <= 0) break;
+
+            const current = state.skills[skillName] || 0;
+            if (current < maxRank) {
+                state.skills[skillName] = current + 1;
+                remaining--;
+                anyChange = true;
+            }
+        }
+    }
+    updateAll();
+    showToast("Puntos de habilidad distribuidos.");
+};
+
+// --- Roll Custom Dice (Global Wrapper) ---
+window.rollCustomDice = rollCustomDice;

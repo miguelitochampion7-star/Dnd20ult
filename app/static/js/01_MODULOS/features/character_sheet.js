@@ -251,7 +251,14 @@ function renderSkills(mods, maxRankLvl, totalPts, acp) {
     const ptsRemaining = Math.max(0, totalPts - spent);
     setDesc('skillPts', ptsRemaining);
 
-    // Auto Btn logic omitted for now to save space, easy to add back
+    // Auto-Assign Button visibility
+    const autoBtn = document.getElementById('btnAutoSkill');
+    if (autoBtn) {
+        if (ptsRemaining > 0) autoBtn.classList.remove('hidden');
+        else autoBtn.classList.add('hidden');
+    }
+
+    if (window.lucide) lucide.createIcons();
 }
 
 function renderAttacks(bab, mods, eff, sizeMod) {
