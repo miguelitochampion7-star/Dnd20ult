@@ -1,9 +1,9 @@
-import { state } from '../../../core/state.js';
+import { state } from '../../../00_CORE/core/state.js';
 import { updateAll } from '../character_sheet.js';
-import { CLASSES, WEAPONS_DB, RACES, KEYS } from '../../../config.js';
-import { showCustomConfirm, showCustomAlert, showToast } from '../../ui/modals.js';
+import { CLASSES, WEAPONS_DB, RACES, KEYS } from '../../../00_CORE/config.js';
+import { showCustomConfirm, showCustomAlert, showToast } from '../../modals.js';
 import { ARCHETYPES } from './data.js';
-import { SPELL_DB } from '../../data/spells.js';
+import { SPELL_DB } from '../../../02_DATOS/data/spells.js';
 
 export function openGenerator() {
     let modal = document.getElementById('genModal');

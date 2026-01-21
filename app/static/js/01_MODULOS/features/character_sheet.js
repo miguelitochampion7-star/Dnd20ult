@@ -1,6 +1,6 @@
 // Character Sheet Logic (The Brain)
-import { state } from '../../core/state.js';
-import { STATS, KEYS, RACES, CLASSES, BUFFS, SKILLS_LIST, SYNERGY_MAP, WEAPONS_DB } from '../../config.js';
+import { state } from '../../00_CORE/core/state.js';
+import { STATS, KEYS, RACES, CLASSES, BUFFS, SKILLS_LIST, SYNERGY_MAP, WEAPONS_DB } from '../../00_CORE/config.js';
 import { getCarryingCapacity, getSave, formatNum } from '../mechanics/stats.js';
 import { rollD20, rollDice, logRoll, rollDamage } from '../mechanics/dice.js';
 import { renderSpells } from './spell_compendium.js';

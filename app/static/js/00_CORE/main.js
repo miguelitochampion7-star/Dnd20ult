@@ -1,17 +1,57 @@
 // Main Entry Point
 import { state } from './core/state.js';
 import { RACES, CLASSES, BUFFS, WEAPONS_DB, KEYS, STATS } from './config.js';
-import { updateAll } from './modules/features/character_sheet.js';
+import { updateAll } from '../01_MODULOS/features/character_sheet.js';
 import {
     toggleCompendium, addSpellFromDB, remSpell, toggleSpellCard,
     showSpellInfoCard, closeSpellInfoCard, toggleSpellSlot, resetSpellSlots
-} from './modules/features/spell_compendium.js';
-import { openGenerator, runGenerator } from './modules/features/archetypes/generator.js';
-import { switchTab, toggleSidebar, toggleFullScreen } from './modules/ui/tabs.js';
-import { showCustomAlert, showCustomConfirm, showToast } from './modules/ui/modals.js';
-import { rollCustomDice, logRoll, rollDamage } from './modules/mechanics/dice.js';
+} from '../01_MODULOS/features/spell_compendium.js';
+import { openGenerator, runGenerator } from '../01_MODULOS/features/archetypes/generator.js';
+import { switchTab, toggleSidebar, toggleFullScreen } from '../01_MODULOS/ui/tabs.js';
+import { showCustomAlert, showCustomConfirm, showToast } from '../01_MODULOS/modals.js';
+import { rollCustomDice, logRoll, rollDamage } from '../01_MODULOS/mechanics/dice.js';
+import { APIClient, AutoSaver } from './api.js';
 
 // --- Initialization ---
+
+// Global Instances
+const api = new APIClient();
+
+// Expose Globals for Inline Scripts (index.html, etc.)
+window.state = state;
+window.api = api;
+window.AutoSaver = AutoSaver;
+
+window.loadDataFromJSON = function (data) {
+    if (!data) return;
+
+    // 1. Merge Data
+    Object.assign(state, data);
+
+    // 2. Update DOM Inputs
+    if (document.getElementById('charName')) document.getElementById('charName').value = state.name || '';
+    if (document.getElementById('raceSelect')) document.getElementById('raceSelect').value = state.race || 'Humano';
+    if (document.getElementById('hpCurr')) document.getElementById('hpCurr').value = state.hp_curr || 0;
+    if (document.getElementById('inventory')) document.getElementById('inventory').value = state.inventory || '';
+    if (document.getElementById('gold')) document.getElementById('gold').value = state.gold || 0;
+
+    // AC
+    if (state.ac_manual) {
+        if (document.getElementById('acArmor')) document.getElementById('acArmor').value = state.ac_manual.armor || 0;
+        if (document.getElementById('acShield')) document.getElementById('acShield').value = state.ac_manual.shield || 0;
+        if (document.getElementById('acNatural')) document.getElementById('acNatural').value = state.ac_manual.natural || 0;
+        if (document.getElementById('acDeflect')) document.getElementById('acDeflect').value = state.ac_manual.deflect || 0;
+    }
+
+    // Stats
+    KEYS.forEach(k => {
+        if (document.getElementById('base_' + k)) document.getElementById('base_' + k).value = state.stats[k] || 10;
+    });
+
+    // 3. Trigger Logic
+    updateAll();
+    showToast("Ficha cargada correctamente");
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) lucide.createIcons();

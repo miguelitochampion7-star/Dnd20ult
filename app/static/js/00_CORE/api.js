@@ -1,5 +1,5 @@
 // API Client para comunicación con el backend
-class APIClient {
+export class APIClient {
     constructor() {
         this.baseURL = '/api';
     }
@@ -61,11 +61,8 @@ class APIClient {
     }
 }
 
-// Instancia global del API client
-const api = new APIClient();
-
 // Auto-guardado inteligente
-class AutoSaver {
+export class AutoSaver {
     constructor(saveFunction, interval = 10000) {
         this.saveFunction = saveFunction;
         this.interval = interval;

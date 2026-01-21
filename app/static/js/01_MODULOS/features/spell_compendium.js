@@ -1,9 +1,9 @@
 // Spell Compendium & Management Module
-import { state, globalFlags } from '../../core/state.js';
-import { SPELL_KNOWN, CLASSES, SPELLS_PER_DAY } from '../../config.js';
-import { showToast } from '../ui/modals.js';
+import { state, globalFlags } from '../../00_CORE/core/state.js';
+import { SPELL_KNOWN, CLASSES, SPELLS_PER_DAY } from '../../00_CORE/config.js';
+import { showToast } from '../modals.js';
 
-import { SPELL_DB } from '../data/spells.js';
+import { SPELL_DB } from '../../02_DATOS/data/spells.js';
 
 // Global SPELL_DB access removed
 
