@@ -60,7 +60,7 @@ export function showSpellInfoCard(spellName) {
 
     const html = `
     <div id="spellInfoModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fadeIn" onclick="window.closeSpellInfoCard()">
-        <div class="w-full max-w-lg ${style.bg} border-2 ${style.border} rounded-xl shadow-2xl overflow-hidden transform scale-100 transition-transform" onclick="event.stopPropagation()">
+        <div class="w-full max-w-lg max-h-[85vh] ${style.bg} border-2 ${style.border} rounded-xl shadow-2xl overflow-hidden overflow-y-auto transform scale-100 transition-transform" onclick="event.stopPropagation()">
             
             <!-- Header -->
             <div class="p-4 border-b ${style.border} flex items-start justify-between">
@@ -116,7 +116,7 @@ export function showSpellInfoCard(spellName) {
             </div>
 
             <!-- Description -->
-            <div class="p-4 max-h-72 overflow-y-auto custom-scroll bg-black/20">
+            <div class="p-4 max-h-60 overflow-y-auto custom-scroll bg-black/20">
                 <div class="spell-desc-container">
                     ${formatSpellDescription(spell.d)}
                 </div>
