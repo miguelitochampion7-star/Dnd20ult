@@ -227,6 +227,48 @@
                 tabLogin.classList.remove('text-[#c5a059]', 'border-[#c5a059]');
             }
         }
+
+        // --- NUEVO: Manejo de OAuth en login.html (Fallback) ---
+        // Si Supabase redirige aquí con el token en el hash, lo procesamos igual.
+        document.addEventListener('DOMContentLoaded', () => {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const error = hashParams.get('error');
+            const errorDescription = hashParams.get('error_description');
+
+            if (error) {
+                console.error("OAuth Error:", errorDescription);
+                // Opcional: Mostrar toast o alerta
+            } else if (accessToken) {
+                console.log("Token OAuth detectado en Login, procesando...");
+
+                // Mostrar indicador de carga visual si se desea
+                document.body.style.cursor = 'wait';
+
+                fetch('/auth/google/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ access_token: accessToken })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/dashboard';
+                        } else {
+                            console.error('Error al verificar token:', data.error);
+                            alert('Error de inicio de sesión: ' + (data.error || 'Desconocido'));
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error de conexión:', err);
+                    })
+                    .finally(() => {
+                        document.body.style.cursor = 'default';
+                    });
+            }
+        });
     </script>
 </body>
 
