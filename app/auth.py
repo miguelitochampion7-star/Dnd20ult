@@ -104,8 +104,9 @@ def sign_in_with_google():
         # URL de autorización de Supabase
         auth_url = f"{Config.SUPABASE_URL}/auth/v1/authorize"
         
-        # URL de callback de NUESTRA aplicación (Hugging Face Space)
-        callback_url = "https://gamingthegame-the-ultimate-d20-ch-sheet.hf.space/auth/callback"
+        # URL de callback de NUESTRA aplicación
+        # NOTA: Debe coincidir con lo configurado en Supabase > Auth > URL Configuration
+        callback_url = "https://theultimate20chsheet.vercel.app/auth/callback"
         
         # Construir URL completa con parámetros
         oauth_url = f"{auth_url}?provider=google&redirect_to={callback_url}"
