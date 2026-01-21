@@ -122,13 +122,13 @@ function renderClassGrimoire(container, classObj) {
 
     // Slots UI
     // We only show slots for the active class logic. 
-    // Warning: `state.spellSlotsUsed` uses global indices. 
+    // Warning: `state.used_slots` uses global indices. 
     // Ideally, `spellSlotsUsed` should be `{ 'Mago': {1: 2}, 'Clerigo': {1: 0} }`. 
     // Current model is simple object `{ 1: 0, 2: 0 }`. It clashes for multiclass.
     // Refactor Plan: Separate usage? For now, shared usage is "ok" but risky.
-    // Let's migrate to `state.spellSlotsUsed[classObj.id][lvl]` logic if possible.
+    // Let's migrate to `state.used_slots[classObj.id][lvl]` logic if possible.
     // Backward compat check:
-    if (!state.spellSlotsUsed[classObj.id]) state.spellSlotsUsed[classObj.id] = {};
+    if (!state.used_slots[classObj.id]) state.used_slots[classObj.id] = {};
 
     // Group Known Spells by Level
     // TODO: Filter known spells relevant to this class?
@@ -145,7 +145,7 @@ function renderClassGrimoire(container, classObj) {
     // Iterate Levels from 0 to Max
     for (let l = 0; l <= maxLvl; l++) {
         const totalSlots = slots[l] || 0;
-        const used = (state.spellSlotsUsed[classObj.id] || {})[l] || 0;
+        const used = (state.used_slots[classObj.id] || {})[l] || 0;
         const knownAtLvl = spellsByLvl[l] || [];
 
         // Skip empty levels (no slots, no spells)
@@ -178,11 +178,11 @@ function renderClassGrimoire(container, classObj) {
                 btn.innerHTML = isUsed ? '' : '✦';
                 btn.onclick = () => {
                     // Toggle Logic
-                    const current = (state.spellSlotsUsed[classObj.id] || {})[l] || 0;
-                    if (!state.spellSlotsUsed[classObj.id]) state.spellSlotsUsed[classObj.id] = {};
+                    const current = (state.used_slots[classObj.id] || {})[l] || 0;
+                    if (!state.used_slots[classObj.id]) state.used_slots[classObj.id] = {};
 
-                    if (s < current) state.spellSlotsUsed[classObj.id][l] = s;
-                    else state.spellSlotsUsed[classObj.id][l] = s + 1;
+                    if (s < current) state.used_slots[classObj.id][l] = s;
+                    else state.used_slots[classObj.id][l] = s + 1;
 
                     renderMagicUI(); // Redraw
                 };
@@ -304,7 +304,7 @@ export function toggleSpellCard(idx) { }
 export function toggleSpellSlot(lvl, idx) { }
 
 export function resetSpellSlots() {
-    state.spellSlotsUsed = {};
+    state.used_slots = {};
     renderMagicUI();
     showToast('✨ Conjuros restaurados');
 }
