@@ -77,6 +77,7 @@ function generateCharacter(cls, lvl) {
     const newState = {
         name: `${cls} Nivel ${lvl}`,
         race: "Humano",
+        align: "Neutral",
         classes: [{ id: cls, lvl: lvl }],
         stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
         hp_curr: 10,
@@ -85,9 +86,10 @@ function generateCharacter(cls, lvl) {
         acp_manual: 0,
         skills: {},
         weapons: [],
-        inventory: [],
+        inventory: "",
         spells: [],
         buffs: [],
+        feats: [],
         used_slots: {},
         gold: 0,
         notes: ""
@@ -125,9 +127,8 @@ function generateCharacter(cls, lvl) {
     tiers.forEach(t => { if (lvl >= t) bestTier = t; });
 
     if (ark.gear && ark.gear[bestTier]) {
-        ark.gear[bestTier].forEach(item => {
-            state.inventory.push({ n: item, w: 0, q: 1 });
-        });
+        const gearList = ark.gear[bestTier].join(', ');
+        state.inventory = gearList;
     }
 
     // 5. Spells
