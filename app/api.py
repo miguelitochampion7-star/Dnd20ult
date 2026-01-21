@@ -13,8 +13,13 @@ def listar_fichas():
     """Lista todas las fichas del usuario actual"""
     try:
         user = get_current_user()
+        if not user or 'id' not in user:
+            return jsonify({"success": False, "error": "Usuario no identificado"}), 401
+
+        # Handle potential missing trailing slash in config, though requests usually handles double slash
+        base_url = Config.SUPABASE_URL.rstrip('/')
+        url = f"{base_url}/rest/v1/fichas"
         
-        url = f"{Config.SUPABASE_URL}/rest/v1/fichas"
         params = {
             "usuario_id": f"eq.{user['id']}",
             "order": "updated_at.desc",
@@ -22,7 +27,8 @@ def listar_fichas():
         }
         headers = get_auth_headers()
         
-        response = requests.get(url, params=params, headers=headers)
+        # Add timeout to prevent hanging
+        response = requests.get(url, params=params, headers=headers, timeout=10)
         
         if response.status_code == 200:
             return jsonify({
@@ -30,27 +36,29 @@ def listar_fichas():
                 "fichas": response.json()
             })
         else:
-            # Log detailed error from Supabase
-            error_detail = "Unknown error"
+            # Try to parse error, safe fallback
             try:
                 error_detail = response.json()
             except:
                 error_detail = response.text
             
-            print(f"[API ERROR] /fichas GET failed: {response.status_code} - {error_detail}")
+            print(f"[API ERROR] /fichas GET {response.status_code}: {error_detail}")
             
             return jsonify({
                 "success": False,
-                "error": "Error cargando fichas",
+                "error": "Error al conectar con base de datos",
                 "status_code": response.status_code,
-                "detail": str(error_detail)
-            }), 500
+                "detail": error_detail
+            }), 502  # Use 502 Bad Gateway to indicate upstream issue
         
+    except requests.exceptions.Timeout:
+         return jsonify({"success": False, "error": "Tiempo de espera agotado (Timeout)"}), 504
     except Exception as e:
-        print(f"[API EXCEPTION] /fichas GET: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "success": False,
-            "error": str(e)
+            "error": f"Error interno del servidor: {str(e)}"
         }), 500
 
 

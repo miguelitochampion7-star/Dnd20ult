@@ -10,9 +10,10 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     
     # Supabase
-    SUPABASE_URL = os.getenv('SUPABASE_URL')
-    SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
-    SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
+    # Supabase
+    SUPABASE_URL = os.getenv('SUPABASE_URL', '').strip() if os.getenv('SUPABASE_URL') else None
+    SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '').strip() if os.getenv('SUPABASE_ANON_KEY') else None
+    SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY', '').strip() if os.getenv('SUPABASE_SERVICE_KEY') else None
     
     # Sesión - Configuración para Hugging Face Spaces
     SESSION_COOKIE_HTTPONLY = True
