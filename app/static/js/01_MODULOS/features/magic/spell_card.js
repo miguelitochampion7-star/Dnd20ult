@@ -67,7 +67,12 @@ export function showSpellInfoCard(spellName) {
     // 3. Create Card Container
     const card = document.createElement('div');
     // Important: flex flex-col max-h-[90vh] ensures card takes up to 90% height but manages its own scroll
-    card.className = `w-full max-w-lg max-h-[90vh] flex flex-col ${style.bg} border-2 ${style.border} rounded-xl shadow-2xl overflow-hidden relative`;
+    // Important: flex flex-col max-h-[90vh] ensures card takes up to 90% height but manages its own scroll
+    // WE USE INLINE STYLES for Critical Layout to avoid Tailwind JIT missing classes issues
+    card.className = `w-full max-w-lg flex flex-col ${style.bg} border-2 ${style.border} rounded-xl shadow-2xl overflow-hidden relative`;
+    card.style.maxHeight = '85vh'; // Safe constraint
+    card.style.display = 'flex';
+    card.style.flexDirection = 'column';
 
     // Stop propagation so clicking card doesn't close it
     card.onclick = (e) => e.stopPropagation();
@@ -94,7 +99,7 @@ export function showSpellInfoCard(spellName) {
         </div>
 
         <!-- SCROLLABLE CONTENT (Flex Grow) -->
-        <div id="spell-modal-scroll" class="overflow-y-auto custom-scroll flex-grow relative bg-black/20">
+        <div id="spell-modal-scroll" class="overflow-y-auto custom-scroll flex-grow relative bg-black/20" style="min-height: 0; overflow-y: auto;">
             
             <!-- Quick Stats Sticky Header -->
             <div class="sticky top-0 z-10 grid grid-cols-4 gap-px bg-black/40 border-b border-white/5 backdrop-blur-md">
