@@ -78,6 +78,9 @@ export function showSpellInfoCard(spellName) {
     card.onclick = (e) => e.stopPropagation();
 
     // 4. Build Content
+    // Update: Added touch-action: none to overlay to prevent background interaction
+    overlay.style.touchAction = 'none';
+
     card.innerHTML = `
         <!-- HEADER (Fixed) -->
         <div class="p-4 border-b ${style.border} bg-black/60 backdrop-blur flex justify-between items-start shrink-0">
@@ -93,13 +96,15 @@ export function showSpellInfoCard(spellName) {
             </div>
             
             <!-- Close Button -->
-            <button id="spell-modal-close" class="bg-gray-800/50 hover:bg-red-900/50 text-gray-400 hover:text-white rounded-full p-2 transition-colors ml-2">
+            <button id="spell-modal-close" class="bg-gray-800/50 hover:bg-red-900/50 text-gray-400 hover:text-white rounded-full p-2 transition-colors ml-2" style="touch-action: manipulation">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
 
         <!-- SCROLLABLE CONTENT (Flex Grow) -->
-        <div id="spell-modal-scroll" class="overflow-y-auto custom-scroll flex-grow relative bg-black/20" style="min-height: 0; overflow-y: auto;">
+        <!-- Added -webkit-overflow-scrolling: touch and touch-action: pan-y for native scroll feeling -->
+        <div id="spell-modal-scroll" class="overflow-y-auto custom-scroll flex-grow relative bg-black/20" 
+             style="min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;">
             
             <!-- Quick Stats Sticky Header -->
             <div class="sticky top-0 z-10 grid grid-cols-4 gap-px bg-black/40 border-b border-white/5 backdrop-blur-md">
@@ -163,16 +168,9 @@ export function showSpellInfoCard(spellName) {
 
     overlay.onclick = closeModal;
 
-    // Mobile Touch Handling for Scroll Lock
-    // We allow touchmove ONLY on the scrollable area
-    const scrollArea = card.querySelector('#spell-modal-scroll');
-
-    // Prevent background scroll events
-    overlay.addEventListener('touchmove', (e) => {
-        if (!scrollArea.contains(e.target)) {
-            e.preventDefault();
-        }
-    }, { passive: false });
+    // Mobile Touch Handling:
+    // With touch-action properties set above, nature scroll should work.
+    // We remove the aggressive preventDefault listeners.
 
     // ESC Key
     const escHandler = (e) => {
