@@ -50,7 +50,7 @@ export function showSpellInfoCard(spellName) {
         return;
     }
 
-    closeModal(); // Ensure any previous modal is closed
+    closeSpellInfoCard(); // Ensure any previous modal is closed
 
     const style = getSchoolStyle(spell.s);
     const subSchool = spell.s && spell.s.includes('[') ? spell.s.match(/\[(.+?)\]/)?.[1] : null;
@@ -164,9 +164,9 @@ export function showSpellInfoCard(spellName) {
 
     // Event Listeners
     const closeBtn = card.querySelector('#spell-modal-close');
-    closeBtn.onclick = closeModal;
+    closeBtn.onclick = closeSpellInfoCard;
 
-    overlay.onclick = closeModal;
+    overlay.onclick = closeSpellInfoCard;
 
     // Mobile Touch Handling:
     // With touch-action properties set above, nature scroll should work.
@@ -174,16 +174,17 @@ export function showSpellInfoCard(spellName) {
 
     // ESC Key
     const escHandler = (e) => {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape') closeSpellInfoCard();
     };
     document.addEventListener('keydown', escHandler);
     window._spellModalEsc = escHandler;
 }
 
 // Global exposure for onClick
-window.closeSpellInfoCard = closeModal;
+// Global exposure for onClick
+window.closeSpellInfoCard = closeSpellInfoCard;
 
-function closeModal() {
+export function closeSpellInfoCard() {
     const overlay = document.getElementById('spell-modal-overlay');
     if (!overlay) return;
 
