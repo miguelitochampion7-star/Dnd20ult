@@ -60,10 +60,11 @@ export function showSpellInfoCard(spellName) {
 
     const html = `
     <div id="spellInfoModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fadeIn" onclick="window.closeSpellInfoCard()">
-        <div class="w-full max-w-lg max-h-[85vh] ${style.bg} border-2 ${style.border} rounded-xl shadow-2xl overflow-hidden overflow-y-auto transform scale-100 transition-transform" onclick="event.stopPropagation()">
+        <!-- Added flex-col to keep header/footer fixed -->
+        <div class="w-full max-w-lg max-h-[85vh] flex flex-col ${style.bg} border-2 ${style.border} rounded-xl shadow-2xl overflow-hidden transform scale-100 transition-transform" onclick="event.stopPropagation()">
             
-            <!-- Header -->
-            <div class="p-4 border-b ${style.border} flex items-start justify-between">
+            <!-- Header (Fixed) -->
+            <div class="p-4 border-b ${style.border} flex items-start justify-between flex-shrink-0 bg-black/40">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="text-2xl">${style.icon}</span>
@@ -74,56 +75,63 @@ export function showSpellInfoCard(spellName) {
                         ${subSchool ? `<span class="text-gray-600">• ${subSchool}</span>` : ''}
                     </p>
                 </div>
-                <button onclick="window.closeSpellInfoCard()" class="text-gray-500 hover:text-white text-2xl leading-none p-1 hover:bg-white/10 rounded transition-colors">&times;</button>
+                <!-- Large Touch Target Close Button -->
+                <button onclick="window.closeSpellInfoCard()" class="text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-2 gap-px bg-black/30">
-                <div class="p-3 bg-black/20 flex items-center gap-2">
-                    <span class="text-yellow-400">⭐</span>
-                    <div>
-                        <p class="text-[10px] text-gray-500 uppercase">Nivel</p>
-                        <p class="text-sm text-gray-200">${formatField(spell.l)}</p>
+            <!-- Scrollable Content Area -->
+            <div class="overflow-y-auto custom-scroll flex-grow relative">
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-px bg-black/30 sticky top-0 z-10">
+                    <div class="p-3 bg-black/80 flex items-center gap-2 backdrop-blur-md">
+                        <span class="text-yellow-400">⭐</span>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase">Nivel</p>
+                            <p class="text-sm text-gray-200">${formatField(spell.l)}</p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-black/80 flex items-center gap-2 backdrop-blur-md">
+                        <span class="text-green-400">⏱️</span>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase">Lanzamiento</p>
+                            <p class="text-sm text-gray-200">${formatField(spell.t)}</p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-black/80 flex items-center gap-2 backdrop-blur-md">
+                        <span class="text-blue-400">🎯</span>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase">Alcance</p>
+                            <p class="text-sm text-gray-200">${formatField(spell.r)}</p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-black/80 flex items-center gap-2 backdrop-blur-md">
+                        <span class="text-cyan-400">⌛</span>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase">Duración</p>
+                            <p class="text-sm text-gray-200">${formatField(spell.dur)}</p>
+                        </div>
                     </div>
                 </div>
-                <div class="p-3 bg-black/20 flex items-center gap-2">
-                    <span class="text-green-400">⏱️</span>
-                    <div>
-                        <p class="text-[10px] text-gray-500 uppercase">Lanzamiento</p>
-                        <p class="text-sm text-gray-200">${formatField(spell.t)}</p>
-                    </div>
+
+                <!-- Components -->
+                <div class="p-3 border-t border-b border-black/30 bg-black/10 flex items-center gap-2">
+                    <span class="text-orange-400">📜</span>
+                    <p class="text-xs text-gray-300"><span class="text-gray-500">Componentes:</span> ${formatField(spell.c)}</p>
                 </div>
-                <div class="p-3 bg-black/20 flex items-center gap-2">
-                    <span class="text-blue-400">🎯</span>
-                    <div>
-                        <p class="text-[10px] text-gray-500 uppercase">Alcance</p>
-                        <p class="text-sm text-gray-200">${formatField(spell.r)}</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-black/20 flex items-center gap-2">
-                    <span class="text-cyan-400">⌛</span>
-                    <div>
-                        <p class="text-[10px] text-gray-500 uppercase">Duración</p>
-                        <p class="text-sm text-gray-200">${formatField(spell.dur)}</p>
+
+                <!-- Description -->
+                <div class="p-4 bg-black/20 pb-8">
+                    <div class="spell-desc-container text-sm leading-relaxed text-gray-300">
+                        ${formatSpellDescription(spell.d)}
                     </div>
                 </div>
             </div>
 
-            <!-- Components -->
-            <div class="p-3 border-t border-b border-black/30 bg-black/10 flex items-center gap-2">
-                <span class="text-orange-400">📜</span>
-                <p class="text-xs text-gray-300"><span class="text-gray-500">Componentes:</span> ${formatField(spell.c)}</p>
-            </div>
-
-            <!-- Description -->
-            <div class="p-4 max-h-60 overflow-y-auto custom-scroll bg-black/20">
-                <div class="spell-desc-container">
-                    ${formatSpellDescription(spell.d)}
-                </div>
-            </div>
-
-            <!-- Combat Footer -->
-            <div class="p-3 border-t border-black/30 bg-black/30 flex gap-4 text-xs">
+            <!-- Combat Footer (Fixed) -->
+            <div class="p-3 border-t border-black/30 bg-black/40 flex gap-4 text-xs flex-shrink-0 backdrop-blur-sm">
                 <div class="flex items-center gap-1">
                     <span class="text-red-400">💪</span>
                     <span class="text-gray-400">Salvación:</span>
@@ -144,9 +152,27 @@ export function showSpellInfoCard(spellName) {
     </style>`;
 
     document.body.insertAdjacentHTML('beforeend', html);
+
+    // Add Escape key listener
+    const escHandler = (e) => {
+        if (e.key === 'Escape') closeSpellInfoCard();
+    };
+    document.addEventListener('keydown', escHandler);
+
+    // Store handler to remove it later
+    window._currentEscHandler = escHandler;
 }
 
 export function closeSpellInfoCard() {
     const modal = document.getElementById('spellInfoModal');
-    if (modal) modal.remove();
+    if (modal) {
+        modal.classList.add('opacity-0'); // Fade out effect
+        setTimeout(() => modal.remove(), 200);
+    }
+
+    // Remove Escape listener
+    if (window._currentEscHandler) {
+        document.removeEventListener('keydown', window._currentEscHandler);
+        window._currentEscHandler = null;
+    }
 }
